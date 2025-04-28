@@ -7,6 +7,7 @@ import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, startWith, switchMap, tap } from 'rxjs/operators';
 import { Book } from '../../../models/book.model';
 import { BookService } from '../../../core/services/book.service';
+import { BookFilterPipe } from '../pipes/book-filter.pipe';
 
 @Component({
   selector: 'app-book-management',
@@ -16,51 +17,63 @@ import { BookService } from '../../../core/services/book.service';
   styleUrls: ['./book-management.component.scss']
 })
 export class BookManagementComponent implements OnInit {
-  
+  searchTerm = '';
   private bookService = inject(BookService);
   private router = inject(Router);
-  
+  private searchTerm$ = new BehaviorSubject<string>('');
+
   // Observable pour les livres avec le pipe async
   books$!: Observable<Book[]>;
-  
+
   // État de chargement
   isLoading = true;
-  
+
   // Pour utiliser Math dans le template
   Math = Math;
-  
+
   // Pagination
   currentPage = 1;
   pageSize = 10;
   totalBooks = 0;
   paginatedBooks: Book[] = [];
-  
+
   // Tri
   sortField: keyof Book = 'id';
   sortDirection: 'asc' | 'desc' = 'asc';
-  
+
   // Sujets pour déclencher les mises à jour
   private refreshSubject = new BehaviorSubject<boolean>(true);
-  private sortSubject = new BehaviorSubject<{field: keyof Book, direction: 'asc' | 'desc'}>({field: 'id', direction: 'asc'});
-  
+  private sortSubject = new BehaviorSubject<{ field: keyof Book, direction: 'asc' | 'desc' }>({ field: 'id', direction: 'asc' });
+
+  private bookFilterPipe = new BookFilterPipe(); // Manquait : instanciation du pipe !
+
   ngOnInit(): void {
-    console.log('[BookManagementComponent] ngOnInit: Initialisation.');
-    
-    // Configurer l'observable pour réagir aux changements de tri et aux rafraîchissements
     this.books$ = combineLatest([
       this.refreshSubject.asObservable(),
-      this.sortSubject.asObservable()
+      this.sortSubject.asObservable(),
+      this.searchTerm$.asObservable()
     ]).pipe(
       tap(() => this.isLoading = true),
-      switchMap(([_, sort]) => this.bookService.books$.pipe(
-        map(books => this.sortBooks(books, sort.field, sort.direction))
-      )),
+      switchMap(([_, sort, searchTerm]) =>
+        this.bookService.books$.pipe(
+          map(books => {
+            const filtered = this.bookFilterPipe.transform(books, searchTerm);
+            return this.sortBooks(filtered, sort.field, sort.direction);
+          })
+        )
+      ),
       tap(books => {
         this.totalBooks = books.length;
         this.updatePaginatedBooks(books);
         this.isLoading = false;
       })
     );
+  }
+
+  onSearchTermChanged(term: string): void {
+    this.searchTerm = term;
+    this.searchTerm$.next(term);
+    this.currentPage = 1;
   }
 
   // Méthodes de pagination
@@ -83,19 +96,19 @@ export class BookManagementComponent implements OnInit {
   paginationRange(): number[] {
     const range = [];
     const maxPagesToShow = 5;
-    
+
     let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = startPage + maxPagesToShow - 1;
-    
+
     if (endPage > this.totalPages) {
       endPage = this.totalPages;
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       range.push(i);
     }
-    
+
     return range;
   }
 
@@ -114,14 +127,14 @@ export class BookManagementComponent implements OnInit {
       this.sortField = field;
       this.sortDirection = 'asc';
     }
-    
+
     this.sortSubject.next({ field: this.sortField, direction: this.sortDirection });
   }
 
   private sortBooks(books: Book[], field: keyof Book, direction: 'asc' | 'desc'): Book[] {
     return [...books].sort((a, b) => {
       let comparison = 0;
-      
+
       // Gérer différemment selon le type de champ
       if (field === 'id' || field === 'price') {
         // Trier numériquement
@@ -132,7 +145,7 @@ export class BookManagementComponent implements OnInit {
         const valB = String(b[field]).toLowerCase();
         comparison = valA.localeCompare(valB);
       }
-      
+
       // Inverser si direction est descendante
       return direction === 'asc' ? comparison : -comparison;
     });
@@ -141,23 +154,24 @@ export class BookManagementComponent implements OnInit {
   // Gestion des erreurs d'image
   onImageError(event: any): void {
     event.target.style.display = 'none';
-    event.target.nextElementSibling.style.display = 'flex';
+    if (event.target.nextElementSibling) {
+      event.target.nextElementSibling.style.display = 'flex';
+    }
   }
 
-  // Méthodes existantes modifiées
   deleteBook(bookId: number, bookTitle: string): void {
     if (confirm(`Êtes-vous sûr de vouloir supprimer le livre "${bookTitle}" (ID: ${bookId}) ?`)) {
       this.bookService.deleteBook(bookId).subscribe({
         next: (success) => {
-          if (success) { 
+          if (success) {
             alert(`Le livre "${bookTitle}" a été supprimé.`);
             this.refreshSubject.next(true); // Rafraîchir la liste après suppression
-          } else { 
-            alert(`Erreur: Impossible de trouver le livre avec l'ID ${bookId} pour le supprimer.`); 
+          } else {
+            alert(`Erreur: Impossible de trouver le livre avec l'ID ${bookId} pour le supprimer.`);
           }
         },
-        error: (err) => { 
-          alert('Une erreur technique est survenue pendant la suppression.'); 
+        error: () => {
+          alert('Une erreur technique est survenue pendant la suppression.');
         }
       });
     }
@@ -168,7 +182,7 @@ export class BookManagementComponent implements OnInit {
     console.log(`[BookManagementComponent] Clic sur Modifier pour ID: ${bookId}, navigation vers /admin/books/edit/${bookId}`);
     this.router.navigate(['/admin/books/edit', bookId]);
   }
-    
+
   addBook(): void {
     console.log(`[BookManagementComponent] Clic sur Ajouter, navigation vers /admin/books/add`);
     this.router.navigate(['/admin/books/add']);

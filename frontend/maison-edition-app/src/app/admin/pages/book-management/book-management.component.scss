@@ -423,3 +423,30 @@ table {
     }
   }
 }
+
+// book-management.component.scss
+.search-container {
+  margin-bottom: 20px;
+  padding: 0 10px;
+  
+  .search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border: 2px solid $border-color;
+    border-radius: 25px;
+    font-size: 1em;
+    @include transition();
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      @include box-shadow(1);
+    }
+  }
+}
+
+// Ajustez l'espacement pour le message d'alerte
+.alert.alert-info {
+  margin-top: 30px;
+}

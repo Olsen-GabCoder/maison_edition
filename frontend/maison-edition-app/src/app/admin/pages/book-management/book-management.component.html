@@ -1,53 +1,67 @@
-<!-- src/app/admin/pages/book-management/book-management.component.html -->
 <div class="admin-page-header">
   <div>
     <h2>Gestion des Livres</h2>
     <p>Ajoutez, modifiez ou supprimez des livres du catalogue.</p>
   </div>
-  <!-- Le clic appelle la méthode addBook() du composant -->
   <button class="btn btn-primary btn-add" (click)="addBook()">
     <i class="add-icon">+</i> Ajouter un nouveau livre
   </button>
 </div>
 
 <div class="admin-page-content book-management-container">
-  <!-- Utilisation de ng-container avec le pipe async pour gérer l'observable books$ -->
-  <!-- La variable 'books' ne sera disponible que si l'observable émet une valeur non null/undefined -->
+  <div class="search-container">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (input)="onSearchTermChanged($any($event.target).value)"
+      placeholder="Rechercher par titre ou auteur..."
+      class="search-input"
+    />
+  </div>
+
   <ng-container *ngIf="books$ | async as books; else loading">
-    
-    <!-- Afficher la table seulement si le tableau 'books' contient des éléments -->
     <div *ngIf="books.length > 0; else noBooks" class="books-table-wrapper">
       <table>
         <thead>
           <tr>
-            <th (click)="sortBy('id')">ID <i class="sort-icon" *ngIf="sortField === 'id'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i></th>
+            <th (click)="sortBy('id')">
+              ID <i class="sort-icon" *ngIf="sortField === 'id'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i>
+            </th>
             <th>Couverture</th>
-            <th (click)="sortBy('title')">Titre <i class="sort-icon" *ngIf="sortField === 'title'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i></th>
-            <th (click)="sortBy('author')">Auteur <i class="sort-icon" *ngIf="sortField === 'author'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i></th>
-            <th (click)="sortBy('category')">Catégorie <i class="sort-icon" *ngIf="sortField === 'category'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i></th>
-            <th (click)="sortBy('price')">Prix <i class="sort-icon" *ngIf="sortField === 'price'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i></th>
+            <th (click)="sortBy('title')">
+              Titre <i class="sort-icon" *ngIf="sortField === 'title'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i>
+            </th>
+            <th (click)="sortBy('author')">
+              Auteur <i class="sort-icon" *ngIf="sortField === 'author'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i>
+            </th>
+            <th (click)="sortBy('category')">
+              Catégorie <i class="sort-icon" *ngIf="sortField === 'category'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i>
+            </th>
+            <th (click)="sortBy('price')">
+              Prix <i class="sort-icon" *ngIf="sortField === 'price'">[{{ sortDirection === 'asc' ? '↑' : '↓' }}]</i>
+            </th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Boucle sur chaque livre dans le tableau 'paginatedBooks' au lieu de 'books' -->
           <tr *ngFor="let book of paginatedBooks">
             <td>{{ book.id }}</td>
             <td>
-              <!-- Affichage de l'image de couverture avec meilleure gestion d'erreur -->
               <div class="book-cover-container">
-                <img [src]="book.coverUrl" [alt]="'Couverture de ' + book.title" class="table-cover-preview"
-                     (error)="onImageError($event)">
+                <img
+                  [src]="book.coverUrl"
+                  [alt]="'Couverture de ' + book.title"
+                  class="table-cover-preview"
+                  (error)="onImageError($event)"
+                />
                 <div class="no-cover">Pas d'image</div>
               </div>
             </td>
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
             <td>{{ book.category }}</td>
-            <!-- Pipe currency pour formater le prix en Euros -->
             <td>{{ book.price | currency:'EUR' }}</td>
             <td class="actions-cell">
-              <!-- Boutons pour les actions avec des icônes -->
               <button class="btn btn-secondary btn-sm" (click)="editBook(book.id)" title="Modifier ce livre">
                 <i class="edit-icon">✏️</i> Modifier
               </button>
@@ -59,50 +73,48 @@
         </tbody>
       </table>
 
-      <!-- Ajout du composant de pagination -->
       <div class="pagination-container" *ngIf="totalBooks > pageSize">
         <div class="pagination-info">
-          Affichage de {{ (currentPage - 1) * pageSize + 1 }} à {{ Math.min(currentPage * pageSize, totalBooks) }} sur {{ totalBooks }} livres
+          Affichage de {{ (currentPage - 1) * pageSize + 1 }} à {{ Math.min(currentPage * pageSize, totalBooks) }} sur
+          {{ totalBooks }} livres
         </div>
         <div class="pagination-controls">
-          <button 
-            class="btn btn-pagination" 
+          <button
+            class="btn btn-pagination"
             [disabled]="currentPage === 1"
             (click)="goToPage(1)"
             title="Première page"
           >
             «
           </button>
-          <button 
-            class="btn btn-pagination" 
+          <button
+            class="btn btn-pagination"
             [disabled]="currentPage === 1"
             (click)="goToPage(currentPage - 1)"
             title="Page précédente"
           >
             ‹
           </button>
-          
           <span class="page-numbers">
-            <button 
+            <button
               *ngFor="let page of paginationRange()"
-              class="btn btn-pagination" 
+              class="btn btn-pagination"
               [class.active]="page === currentPage"
               (click)="goToPage(page)"
             >
               {{ page }}
             </button>
           </span>
-          
-          <button 
-            class="btn btn-pagination" 
+          <button
+            class="btn btn-pagination"
             [disabled]="currentPage === totalPages"
             (click)="goToPage(currentPage + 1)"
             title="Page suivante"
           >
             ›
           </button>
-          <button 
-            class="btn btn-pagination" 
+          <button
+            class="btn btn-pagination"
             [disabled]="currentPage === totalPages"
             (click)="goToPage(totalPages)"
             title="Dernière page"
@@ -110,9 +122,9 @@
             »
           </button>
         </div>
-        
+
         <div class="page-size-selector">
-          <label for="pageSize">Livres par page:</label>
+          <label for="pageSize">Livres par page :</label>
           <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
             <option [value]="5">5</option>
             <option [value]="10">10</option>
@@ -122,24 +134,25 @@
         </div>
       </div>
     </div>
-    
-    <!-- Template (#noBooks) affiché si books.length est 0 -->
+
     <ng-template #noBooks>
       <div class="alert alert-info">
         <i class="info-icon">📚</i>
-        <p>Aucun livre trouvé dans le catalogue.</p>
+        <p *ngIf="searchTerm; else noBooksMessage">
+          Aucun livre ne correspond à votre recherche '{{ searchTerm }}'.
+        </p>
+        <ng-template #noBooksMessage>
+          <p>Aucun livre trouvé dans le catalogue.</p>
+        </ng-template>
         <button class="btn btn-primary" (click)="addBook()">Ajouter un livre</button>
       </div>
     </ng-template>
-    
   </ng-container>
-  
-  <!-- Template (#loading) affiché pendant que l'observable books$ n'a pas encore émis -->
+
   <ng-template #loading>
     <div class="alert alert-loading">
       <div class="spinner"></div>
       <p>Chargement des livres...</p>
     </div>
   </ng-template>
-  
 </div>
