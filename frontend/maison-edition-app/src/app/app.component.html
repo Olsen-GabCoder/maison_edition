@@ -1,8 +1,12 @@
-<app-header></app-header>
+<!-- src/app/app.component.html -->
+<app-header></app-header> <!-- Ou votre composant header -->
 
-<main>
-  <!-- Le contenu spécifique à chaque page viendra ici plus tard grâce au routeur -->
+<main class="main-content container mt-4 mb-4"> <!-- Ajouter des marges -->
   <router-outlet></router-outlet>
 </main>
 
-<app-footer></app-footer>
+<!-- ===> AJOUTER LE COMPOSANT NOTIFICATION ICI <=== -->
+<app-notification></app-notification>
+<!-- ===> FIN AJOUT <=== -->
+
+<app-footer></app-footer> <!-- Ou votre composant footer -->

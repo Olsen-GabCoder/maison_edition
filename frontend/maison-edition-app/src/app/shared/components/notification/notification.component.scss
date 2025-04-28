@@ -1,0 +1,76 @@
+/* src/app/shared/components/notification/notification.component.scss */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050; /* Au-dessus de la plupart des éléments */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    width: 350px; /* Ajustez la largeur selon vos besoins */
+  }
+  
+  .alert {
+    margin-bottom: 0; /* Supprimer la marge par défaut des alertes Bootstrap */
+  }
+  
+  .alert-dismissible {
+    padding-right: 2.5rem;
+  }
+  
+  .btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.75rem 1rem;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    opacity: 0.5;
+  
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+  
+  .alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+  }
+  
+  .alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+  }
+  
+  .alert-info {
+    background-color: #e7f5fe;
+    border-color: #cce5df;
+    color: #0c5460;
+  }
+  
+  .alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    color: #85640a;
+  }
+  
+  .alert-secondary {
+    background-color: #e2e3e5;
+    border-color: #d1d3d5;
+    color: #383d41;
+  }
+  
+  .me-2 {
+    margin-right: 0.5rem;
+  }
+  
+  /* Correction du chemin @import (à adapter selon la structure réelle de ton projet) */
+  /* Si ton fichier variables.scss est directement dans le dossier 'styles' : */
+  /* @import '../../../../styles/variables'; */
+  
+  /* Si tu utilises @use (recommandé) : */
+  /* @use '../../../../styles/variables' as var; */

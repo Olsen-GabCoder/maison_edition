@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './core/components/header/header.component';
 import { FooterComponent } from './core/components/footer/footer.component';
+import { NotificationComponent } from './shared/components/notification/notification.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +11,8 @@ import { FooterComponent } from './core/components/footer/footer.component';
   imports: [
     RouterOutlet,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    NotificationComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']

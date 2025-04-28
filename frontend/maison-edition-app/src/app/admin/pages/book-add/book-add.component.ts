@@ -5,60 +5,46 @@ import { Router } from '@angular/router';
 import { BookFormComponent } from '../../components/book-form/book-form.component';
 import { BookService } from '../../../core/services/book.service';
 import { Book } from '../../../models/book.model';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NotificationService } from '../../../core/services/notification.service'; // <-- IMPORTER
 
 @Component({
   selector: 'app-book-add',
   standalone: true,
-  imports: [ CommonModule, BookFormComponent, ReactiveFormsModule  ],
+  imports: [CommonModule, BookFormComponent], // Supprimer RouterLink
   templateUrl: './book-add.component.html',
   styleUrls: ['./book-add.component.scss']
 })
 export class BookAddComponent {
-
   private bookService = inject(BookService);
   private router = inject(Router);
+  private notificationService = inject(NotificationService); // <-- INJECTER
 
-  pageTitle = "Ajouter un Nouveau Livre";
+  isSubmitting = false;
+  pageTitle = "Ajouter un Nouveau Livre"; // <-- AJOUTER CETTE LIGNE
+  // errorMessage: string | null = null; // Peut être supprimé ou gardé pour erreurs spécifiques au formulaire
 
-  handleBookAdd(bookData: any): void { // Type 'any' pour correspondre à l'emit
-    console.log('[BookAddComponent] Réception des données du formulaire:', bookData);
+  handleBookAdd(bookData: Partial<Book>): void {
+    this.isSubmitting = true;
+    // this.errorMessage = null;
 
-    // Vérifier si les propriétés requises existent dans bookData
-    if (!bookData.title || !bookData.author || !bookData.coverUrl || !bookData.summary || bookData.price === null || bookData.price === undefined || !bookData.category) {
-      console.error('[BookAddComponent] Données de formulaire incomplètes:', bookData);
-      alert('Veuillez remplir tous les champs obligatoires.');
-      return;
-    }
-
-    // Créer un objet Omit<Book, 'id'> explicitement
-    const newBookData: Omit<Book, 'id'> = {
-      title: bookData.title,
-      author: bookData.author,
-      coverUrl: bookData.coverUrl,
-      summary: bookData.summary,
-      price: bookData.price,
-      category: bookData.category
-    };
-
-    // >>> APPEL RÉEL AU SERVICE <<<
-    this.bookService.addBook(newBookData).subscribe({
+    this.bookService.addBook(bookData as Omit<Book, 'id'>).subscribe({
       next: (newBook) => {
-        console.log('[BookAddComponent] Livre ajouté avec succès via le service:', newBook);
-        alert(`Le livre "${newBook.title}" (ID: ${newBook.id}) a été ajouté.`);
-        // Rediriger vers la liste des livres après succès
+        this.isSubmitting = false;
+        console.log('[BookAdd] Livre ajouté avec succès:', newBook);
+        this.notificationService.showSuccess(`Livre "${newBook.title}" ajouté avec succès !`); // <-- NOTIFICATION SUCCÈS
         this.router.navigate(['/admin/books']);
       },
       error: (err) => {
-        console.error('[BookAddComponent] Erreur lors de l\'ajout du livre:', err);
-        alert('Une erreur est survenue lors de l\'ajout du livre.');
-        // Rester sur le formulaire en cas d'erreur
+        this.isSubmitting = false;
+        const message = `Erreur lors de l'ajout : ${err.message || 'Erreur inconnue'}`;
+        console.error('[BookAdd] Erreur ajout livre:', err);
+        this.notificationService.showError(message); // <-- NOTIFICATION ERREUR
+        // this.errorMessage = message; // Garder si vous voulez afficher aussi dans le formulaire
       }
     });
   }
 
   handleCancel(): void {
-    console.log('[BookAddComponent] Annulation, retour à la liste des livres.');
     this.router.navigate(['/admin/books']);
   }
 }

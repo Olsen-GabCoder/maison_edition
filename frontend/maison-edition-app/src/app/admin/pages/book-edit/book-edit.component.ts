@@ -1,123 +1,115 @@
 // src/app/admin/pages/book-edit/book-edit.component.ts
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router'; // ActivatedRoute pour lire l'ID dans l'URL
-import { Observable, switchMap, of, tap } from 'rxjs'; // switchMap pour enchaîner les observables
-import { BookFormComponent } from '../../components/book-form/book-form.component'; // Notre formulaire réutilisable
-import { BookService } from '../../../core/services/book.service';
+// ... autres imports
+import { NotificationService } from '../../../core/services/notification.service'; // <-- IMPORTER
 import { Book } from '../../../models/book.model';
-import { ReactiveFormsModule } from '@angular/forms';
+import { Observable, of, switchMap, tap, catchError, map } from 'rxjs';
+import { BookService } from '../../../core/services/book.service';
+import { ActivatedRoute, Router } from '@angular/router'; // Garder ActivatedRoute et Router
+import { CommonModule } from '@angular/common';
+import { BookFormComponent } from '../../components/book-form/book-form.component';
+
 
 @Component({
-  selector: 'app-book-edit',
+  // ... selector, standalone, etc.
   standalone: true,
-  imports: [
-    CommonModule,
-    BookFormComponent,
-    ReactiveFormsModule   // Utiliser le composant formulaire
-  ],
+  imports: [CommonModule, BookFormComponent], // Supprimer RouterLink
   templateUrl: './book-edit.component.html',
   styleUrls: ['./book-edit.component.scss']
 })
 export class BookEditComponent implements OnInit {
-
+  // ... injections (route, router, bookService)
+  private notificationService = inject(NotificationService); // <-- INJECTER
   private route = inject(ActivatedRoute); // Pour lire les paramètres de l'URL
   private router = inject(Router);
   private bookService = inject(BookService);
 
-  pageTitle = "Modifier le Livre";
-  bookToEdit$: Observable<Book | undefined> | undefined; // Observable pour les données du livre à éditer
-  bookId: number | null = null; // Pour stocker l'ID
+  // ... propriétés (bookToEdit$, pageTitle, isLoading, isSubmitting, currentBookId)
+  bookToEdit$: Observable<Book | null> | undefined;
+  pageTitle = "Chargement...";
+  isLoading = false;
+  isSubmitting = false;
+  currentBookId: number | null = null;
+  errorMessage: string | null = null; // Garder pour erreurs de chargement/formulaire
 
   ngOnInit(): void {
-    console.log('[BookEditComponent] ngOnInit: Initialisation.');
-    // Récupérer l'ID du livre depuis les paramètres de la route
-    // switchMap permet de passer de l'observable des paramètres de route
-    // à l'observable retourné par getBookById
+    this.loadBook();
+  }
+
+  loadBook(): void {
+    this.isLoading = true;
+    this.errorMessage = null; // Réinitialiser pour le chargement
+    this.pageTitle = 'Chargement...';
     this.bookToEdit$ = this.route.paramMap.pipe(
-      tap(params => console.log('[BookEditComponent] Paramètres de route reçus:', params)),
       switchMap(params => {
-        const idParam = params.get('id'); // 'id' doit correspondre au nom du paramètre dans admin.routes.ts
+        const idParam = params.get('id');
         if (idParam) {
-          this.bookId = +idParam; // Convertir le paramètre string en nombre
-          console.log(`[BookEditComponent] ID extrait de l'URL: ${this.bookId}`);
-          // Appeler le service pour récupérer le livre correspondant à cet ID
-          return this.bookService.getBookById(this.bookId);
+          const id = +idParam;
+          this.currentBookId = id;
+          return this.bookService.getBookById(id).pipe(
+            map(book => book ? book : null), // S'assurer d'émettre null si book est undefined
+            tap(book => {
+              this.isLoading = false;
+              if (!book) {
+                const msg = `Livre ID ${id} non trouvé.`;
+                this.errorMessage = msg; // Erreur affichée sur la page
+                this.pageTitle = "Erreur";
+              } else {
+                this.pageTitle = `Modifier : ${book.title}`;
+              }
+            }),
+            catchError(error => {
+              this.isLoading = false;
+              const msg = `Erreur chargement livre ID ${id}: ${error.message || 'Erreur serveur'}`;
+              this.errorMessage = msg; // Erreur affichée sur la page
+              this.pageTitle = "Erreur Chargement";
+              this.notificationService.showError("Impossible de charger les données du livre."); // Notification générique
+              console.error(msg, error);
+              return of(null);
+            })
+          );
         } else {
-          // Si pas d'ID dans l'URL, retourner un observable de undefined
-          console.error('[BookEditComponent] Aucun ID trouvé dans les paramètres de route.');
-          this.pageTitle = "Erreur: ID de livre manquant"; // Mettre à jour le titre
-          return of(undefined);
-        }
-      }),
-      tap(book => { // Log après avoir récupéré le livre
-        if (!book) {
-          console.error(`[BookEditComponent] Livre avec ID ${this.bookId} non trouvé par le service.`);
-          this.pageTitle = `Erreur: Livre ID ${this.bookId} non trouvé`;
-        } else {
-          console.log('[BookEditComponent] Données initiales pour le formulaire:', book);
-          this.pageTitle = `Modifier : ${book.title}`; // Mettre à jour le titre avec celui du livre
+          this.isLoading = false;
+          this.errorMessage = 'ID de livre manquant.';
+          this.pageTitle = "Erreur";
+          return of(null);
         }
       })
     );
   }
 
-  /**
-   * Gère la soumission du formulaire d'édition.
-   * Appelle la méthode updateBook du service.
-   * @param bookData Les données mises à jour du formulaire (devraient inclure l'ID ici).
-   */
-  handleBookUpdate(bookData: any): void { // Type 'any' pour correspondre à l'emit
-    // Vérifier si on a bien l'ID stocké
-    if (this.bookId === null) {
-      console.error('[BookEditComponent] Tentative de mise à jour sans ID valide.');
-      alert('Erreur: Impossible de mettre à jour le livre sans son ID.');
-      return;
-    }
 
-    // Vérifier si les propriétés requises existent dans bookData
-    if (!bookData.title || !bookData.author || !bookData.coverUrl || !bookData.summary || bookData.price === null || bookData.price === undefined || !bookData.category) {
-      console.error('[BookEditComponent] Données de formulaire incomplètes:', bookData);
-      alert('Veuillez remplir tous les champs obligatoires.');
-      return;
-    }
+  handleBookUpdate(bookData: Partial<Book>): void {
+    if (this.currentBookId === null) return; // Sécurité
+    this.isSubmitting = true;
+    this.errorMessage = null; // Réinitialiser pour la soumission
+    this.pageTitle = `Mise à jour...`;
 
-    // Construire l'objet Book complet avec l'ID
-    const bookToUpdate: Book = {
-      id: this.bookId,
-      title: bookData.title,
-      author: bookData.author,
-      coverUrl: bookData.coverUrl,
-      summary: bookData.summary,
-      price: bookData.price,
-      category: bookData.category
-    };
+    const updatedBook: Book = { ...bookData, id: this.currentBookId } as Book; // Créer un objet Book complet
 
-    console.log('[BookEditComponent] Demande de mise à jour pour ID:', this.bookId, 'avec données:', bookToUpdate);
-
-    // Appel de la méthode updateBook du service
-    this.bookService.updateBook(bookToUpdate).subscribe({
+    this.bookService.updateBook(updatedBook).subscribe({ // Passer l'objet Book complet
       next: (updatedBook) => {
-        if (updatedBook) {
-          console.log('[BookEditComponent] Livre mis à jour avec succès:', updatedBook);
-          alert(`Le livre "${updatedBook.title}" a été mis à jour.`);
-          this.router.navigate(['/admin/books']); // Rediriger vers la liste
-        } else {
-          // Cas où le service retourne undefined (ne devrait pas arriver si getBookById a fonctionné)
-          console.error('[BookEditComponent] Erreur: Le service n\'a pas retourné de livre mis à jour.');
-          alert(`Erreur lors de la mise à jour du livre ID ${this.bookId}.`);
-        }
+        this.isSubmitting = false;
+        console.log('[BookEdit] Mise à jour réussie:', updatedBook);
+        const title = updatedBook?.title || 'Livre';
+        this.notificationService.showSuccess(`"${title}" mis à jour avec succès !`); // <-- NOTIFICATION SUCCÈS
+        this.router.navigate(['/admin/books']);
       },
       error: (err) => {
-        console.error('[BookEditComponent] Erreur technique lors de la mise à jour:', err);
-        alert('Une erreur technique est survenue lors de la mise à jour.');
+        this.isSubmitting = false;
+        const message = `Échec mise à jour: ${err.message || 'Erreur inconnue'}`;
+        console.error('[BookEdit] Erreur mise à jour:', err);
+        this.notificationService.showError(message); // <-- NOTIFICATION ERREUR
+        this.errorMessage = message; // Afficher aussi dans le formulaire via @Input generalError
+        // Rétablir le titre
+        this.bookToEdit$?.pipe(
+          map(book => book ? `Modifier : ${book.title}` : 'Erreur de mise à jour')
+        ).subscribe(title => this.pageTitle = title);
       }
     });
   }
 
-  /** Gère l'annulation depuis le formulaire */
   handleCancel(): void {
-    console.log('[BookEditComponent] Annulation, retour à la liste des livres.');
     this.router.navigate(['/admin/books']);
   }
 }

@@ -1,0 +1,10 @@
+<div class="notification-container">
+    <div *ngFor="let notification of notifications; let i = index"
+         [@fadeInOut]
+         class="alert {{ getCssClass(notification) }} alert-dismissible fade show"
+         role="alert">
+      <i class="{{ getIconClass(notification) }} me-2"></i>
+      {{ notification.message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" (click)="removeNotification(notification)"></button>
+    </div>
+  </div>
