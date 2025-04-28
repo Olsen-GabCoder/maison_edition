@@ -1,0 +1,116 @@
+// src/app/admin/components/admin-layout/admin-layout.component.scss
+@use 'sass:color'; // Utilisation du module Sass pour manipuler les couleurs
+
+// --- Variables de Style ---
+$admin-bg: #f0f4f8;          // Fond général de la zone de contenu admin
+$sidebar-bg: #1f2937;        // Fond de la sidebar (gris très foncé)
+$sidebar-text: #d1d5db;      // Couleur du texte normal dans la sidebar (gris clair)
+$sidebar-text-hover: #ffffff;  // Couleur du texte au survol d'un lien
+$sidebar-link-hover-bg: #374151; // Fond d'un lien au survol
+$sidebar-link-active-bg: #10b981; // Fond du lien actif (turquoise/vert)
+$sidebar-link-active-text: #ffffff; // Couleur du texte du lien actif
+$content-bg: #ffffff;         // Fond de la zone où le contenu s'affiche
+$danger-color: #ef4444;       // Couleur rouge pour les actions dangereuses (déconnexion)
+$danger-hover-color: color.adjust($danger-color, $lightness: -8%); // Rouge un peu plus foncé
+
+// --- Styles Globaux du Layout Admin ---
+
+// Conteneur principal qui utilise Flexbox pour organiser sidebar et contenu
+.admin-container {
+  display: flex;        // Active Flexbox
+  min-height: 100vh;    // Assure que le layout prend au moins toute la hauteur de l'écran
+}
+
+// --- Styles de la Sidebar (barre latérale gauche) ---
+.admin-sidebar {
+  width: 250px;             // Largeur fixe de la sidebar
+  background-color: $sidebar-bg; // Couleur de fond
+  color: $sidebar-text;      // Couleur du texte par défaut
+  padding: 25px 0;          // Espacement interne en haut et en bas
+  display: flex;            // Utilise Flexbox pour organiser son propre contenu (titre, nav, actions)
+  flex-direction: column;   // Empile les éléments verticalement
+  flex-shrink: 0;           // Empêche la sidebar de rétrécir si le contenu principal est trop large
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1); // Ombre portée sur le côté droit
+  position: sticky;         // Optionnel: Fixe la sidebar lors du défilement
+  top: 0;                   // Nécessaire avec sticky
+  height: 100vh;            // Nécessaire avec sticky pour occuper toute la hauteur
+
+  // Style du titre "PANEL ADMIN"
+  h2 {
+    text-align: center;       // Centre le texte
+    margin: 0 0 35px 0;     // Marge en bas uniquement
+    padding: 0 20px;        // Empêche le texte de toucher les bords
+    font-size: 1.6em;       // Taille de la police
+    font-weight: 700;       // Épaisseur de la police (gras)
+    letter-spacing: 1px;    // Espacement entre les lettres
+    color: #f9fafb;         // Couleur du texte (presque blanc)
+  }
+
+  // Style de la zone de navigation (<nav>)
+  .admin-nav {
+    flex-grow: 1; // Prend tout l'espace vertical disponible, poussant les actions en bas
+
+    // Style pour chaque lien (<a>) dans la navigation
+    a {
+      display: flex;            // Permet d'aligner icône et texte (si ajout d'icônes)
+      align-items: center;      // Centre verticalement
+      color: $sidebar-text;      // Couleur du texte
+      text-decoration: none;    // Pas de soulignement
+      padding: 15px 30px;       // Espacement interne (haut/bas, gauche/droite)
+      transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease; // Animation douce
+      font-size: 1.0em;       // Taille de police
+      border-left: 4px solid transparent; // Bordure gauche pour l'indicateur actif (initialement transparente)
+
+      // Style au survol de la souris
+      &:hover {
+        background-color: $sidebar-link-hover-bg; // Change le fond
+        color: $sidebar-text-hover;              // Change la couleur du texte
+      }
+
+      // Style spécifique lorsque le lien est actif (classe 'active' ajoutée par routerLinkActive)
+      &.active {
+        background-color: $sidebar-link-active-bg; // Fond de couleur vive
+        color: $sidebar-link-active-text;          // Texte en blanc
+        font-weight: 600;                       // Police légèrement plus épaisse
+        border-left-color: #ffffff;              // La bordure gauche devient blanche
+      }
+    }
+  }
+
+  // Style de la section contenant le bouton de déconnexion
+  .admin-actions {
+     padding: 20px 25px 15px 25px; // Espacement autour
+     margin-top: 20px;             // Marge au-dessus pour séparer de la nav
+     border-top: 1px solid #374151; // Ligne de séparation fine
+
+     // Style du bouton de déconnexion
+     button {
+        width: 100%;                    // Prend toute la largeur de la section
+        padding: 11px 15px;             // Espacement interne
+        background-color: $danger-color;  // Couleur de fond rouge
+        color: white;                   // Texte blanc
+        border: none;                   // Pas de bordure
+        border-radius: 5px;             // Coins arrondis
+        cursor: pointer;                // Curseur main au survol
+        font-size: 1em;
+        font-weight: 500;
+        transition: background-color 0.2s ease; // Animation douce au survol
+        display: flex;                  // Permet d'aligner icône et texte
+        align-items: center;
+        justify-content: center;        // Centre le contenu (texte/icône)
+
+        // Style au survol
+        &:hover {
+           background-color: $danger-hover-color; // Couleur de fond légèrement plus foncée
+        }
+     }
+  }
+}
+
+// --- Styles de la Zone de Contenu Principal (à droite) ---
+.admin-content {
+  flex-grow: 1;                   // Prend tout l'espace horizontal restant
+  background-color: $admin-bg;    // Couleur de fond générale
+  padding: 40px;                  // Espacement interne autour du contenu
+  overflow-y: auto;               // Ajoute une barre de défilement vertical si le contenu dépasse
+}

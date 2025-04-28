@@ -1,0 +1,93 @@
+<!-- src/app/admin/pages/order-list/order-list.component.html -->
+<div class="admin-page-header">
+    <h2>Gestion des Commandes</h2>
+    <p>Liste des commandes passées (données simulées).</p>
+  </div>
+  
+  <div class="admin-page-content">
+    <!-- Utilisation du pipe async pour s'abonner à l'observable orders$ -->
+    <div *ngIf="orders$ | async as orders; else loading">
+  
+      <!-- Vérifier s'il y a des commandes à afficher -->
+      <div *ngIf="orders.length > 0; else noOrders" class="order-list-container">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Email</th>
+              <th class="text-right">Total</th> <!-- Aligner à droite -->
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Boucler sur chaque commande dans la liste -->
+            <tr *ngFor="let order of orders" class="order-item">
+  
+              <!-- ================================================== -->
+              <!-- === C'EST ICI QUE LE LIEN DOIT ÊTRE AJOUTÉ === -->
+              <!-- ================================================== -->
+              <!-- Colonne Numéro de Commande rendue cliquable -->
+              <td>
+                <!-- La balise <a> avec [routerLink] pour naviguer -->
+                <!-- ['../orders', order.id] construit le lien vers /admin/orders/ID_DE_LA_COMMANDE -->
+                <a [routerLink]="['../orders', order.id]" title="Voir les détails de la commande {{ order.orderNumber }}">
+                  {{ order.orderNumber }}
+                </a>
+                <!-- Affichage de l'ID technique en petit -->
+                <small>({{ order.id }})</small>
+              </td>
+              <!-- ================================================== -->
+              <!-- === FIN DE L'AJOUT DU LIEN === -->
+              <!-- ================================================== -->
+  
+              <!-- Colonne Date -->
+              <td>{{ order.orderDate | date:'dd/MM/yy HH:mm' }}</td>
+              <!-- Colonne Nom du Client -->
+              <td>{{ order.customerName }}</td>
+              <!-- Colonne Email du Client (cliquable mailto:) -->
+              <td><a [href]="'mailto:' + order.customerEmail" title="Contacter {{ order.customerName }}">{{ order.customerEmail }}</a></td>
+              <!-- Colonne Montant Total (formaté et aligné à droite) -->
+              <td class="text-right">{{ order.totalAmount | currency:'EUR':'symbol':'1.2-2' }}</td>
+              <!-- Colonne Statut (avec menu déroulant pour modification) -->
+              <td>
+                <select [value]="order.status" (change)="onStatusChange(order.id, $event)" class="status-select" title="Changer le statut">
+                  <option *ngFor="let status of possibleStatuses" [value]="status">
+                    {{ status }}
+                  </option>
+                </select>
+                <br>
+                <small *ngIf="order.lastUpdate" class="last-update-info">Maj: {{ order.lastUpdate | date:'dd/MM HH:mm' }}</small>
+              </td>
+              <!-- Colonne Actions -->
+              <td class="actions-cell">
+                <!-- Bouton pour supprimer la commande -->
+                <button type="button" (click)="deleteOrder(order.id)" class="btn btn-danger btn-sm" title="Supprimer cette commande (Simulation)">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+                 <!-- Option: Ajouter un bouton "Détails" explicite ici si préféré -->
+                 <!--
+                 <button type="button" [routerLink]="['../orders', order.id]" class="btn btn-info btn-sm" title="Voir les détails">
+                     <i class="fas fa-eye"></i>
+                 </button>
+                 -->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <!-- Template affiché si le tableau 'orders' est vide -->
+      <ng-template #noOrders>
+        <p class="alert alert-info">Aucune commande à afficher pour le moment.</p>
+      </ng-template>
+  
+    </div>
+  
+    <!-- Template affiché pendant le chargement initial des données -->
+    <ng-template #loading>
+      <p>Chargement de la liste des commandes...</p>
+    </ng-template>
+  </div>

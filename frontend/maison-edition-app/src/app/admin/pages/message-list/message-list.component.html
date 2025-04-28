@@ -1,0 +1,47 @@
+<div class="admin-page-header">
+    <h2>Messages Reçus</h2>
+    <p>Liste des messages envoyés via le formulaire de contact.</p>
+  </div>
+  
+  <div class="admin-page-content">
+    <div *ngIf="messages$ | async as messages; else loadingOrError">
+      <div *ngIf="messages.length > 0; else noMessages" class="message-list-container">
+        <table class="message-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Sujet</th>
+              <th>Message (extrait)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let message of messages" class="message-item">
+              <td>{{ message.date | date: 'dd/MM/yy HH:mm' }}</td>
+              <td>{{ message.name }}</td>
+              <td><a [href]="'mailto:' + message.email">{{ message.email }}</a></td>
+              <td>{{ message.subject }}</td>
+              <td>{{ message.message | slice: 0:100 }}{{ message.message.length > 100 ? '...' : '' }}</td>
+              <td>
+                <button (click)="deleteMessage(message.id)" class="btn btn-danger btn-sm" title="Supprimer">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <ng-template #noMessages>
+        <p class="alert alert-info">Aucun message reçu pour le moment.</p>
+      </ng-template>
+  
+    </div>
+  
+    <ng-template #loadingOrError>
+      <p>Chargement des messages...</p>
+    </ng-template>
+  </div>
+  

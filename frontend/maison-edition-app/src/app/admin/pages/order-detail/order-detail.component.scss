@@ -1,0 +1,195 @@
+// src/app/admin/pages/order-detail/order-detail.component.scss
+
+// Styles pour le lien de retour
+.back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #0056b3; // Bleu un peu plus foncé
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 500;
+    padding: 5px 0; // Espace cliquable
+  
+    &:hover {
+      color: #003d80;
+      text-decoration: underline;
+    }
+  }
+  
+  // Grille principale pour organiser les cartes de détails
+  .order-detail-grid {
+    display: grid;
+    // Crée 1 ou 2 colonnes selon l'espace disponible, largeur min 300px
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px; // Espace entre les cartes
+    margin-top: 20px;
+  }
+  
+  // Style de base pour chaque carte de détail
+  .detail-card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6; // Bordure subtile
+    border-radius: 6px; // Coins légèrement arrondis
+    padding: 20px 25px; // Plus d'espace interne
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); // Ombre légère
+  
+    h3 {
+      margin-top: 0;
+      margin-bottom: 20px; // Plus d'espace sous le titre
+      font-size: 1.2em; // Taille de titre un peu plus grande
+      font-weight: 600;
+      color: #343a40; // Couleur de titre foncée
+      border-bottom: 1px solid #e9ecef; // Ligne de séparation
+      padding-bottom: 12px;
+    }
+  
+    p {
+      margin-top: 0;
+      margin-bottom: 12px; // Espace entre les paragraphes
+      font-size: 0.95em;
+      line-height: 1.6; // Interligne confortable
+      color: #495057; // Couleur de texte standard
+  
+      &:last-child {
+        margin-bottom: 0; // Pas de marge pour le dernier paragraphe
+      }
+  
+      strong {
+        color: #212529; // Texte en gras plus foncé
+        margin-right: 8px;
+        font-weight: 600;
+      }
+  
+      a {
+        color: #0069d9;
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+          color: #0056b3;
+        }
+      }
+  
+      // Style pour les ID ou codes techniques
+      .code-inline {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.9em;
+        background-color: #f8f9fa;
+        padding: 2px 5px;
+        border-radius: 3px;
+        color: #495057;
+      }
+    }
+  
+    // Permettre à la carte des items de prendre toute la largeur
+    &.items-card {
+      grid-column: 1 / -1; // S'étend sur toutes les colonnes de la grille
+    }
+  }
+  
+  // Styles pour le tableau des articles
+  .table-responsive {
+     overflow-x: auto; // Ajoute un scroll horizontal si nécessaire sur petits écrans
+  }
+  
+  .items-table {
+    width: 100%;
+    border-collapse: collapse; // Fusionne les bordures
+    margin-top: 15px;
+    margin-bottom: 10px; // Espace après le tableau
+  
+    th, td {
+      padding: 12px 15px; // Espace dans les cellules
+      text-align: left;
+      border-bottom: 1px solid #e9ecef; // Lignes horizontales
+      font-size: 0.9em;
+      vertical-align: middle; // Alignement vertical
+    }
+  
+    thead th {
+      background-color: #f8f9fa; // Fond léger pour l'en-tête
+      font-weight: 600;
+      color: #495057;
+      white-space: nowrap; // Empêche le retour à la ligne
+      border-bottom-width: 2px; // Ligne plus épaisse sous l'en-tête
+      border-top: 1px solid #e9ecef; // Ligne au-dessus (optionnel)
+    }
+  
+    tbody tr:hover {
+       background-color: #f1f3f5; // Léger surlignage au survol
+    }
+  
+    tbody tr:last-child td {
+       border-bottom: none; // Pas de ligne sous la dernière ligne du corps
+    }
+  
+    // Alignement à droite pour les chiffres
+    .text-right {
+      text-align: right;
+      white-space: nowrap; // Empêche le retour à la ligne des montants
+    }
+  
+    // Styles pour le pied de tableau (total)
+    tfoot td {
+      border-top: 2px solid #dee2e6; // Ligne épaisse au-dessus du total
+      font-weight: 600;
+      color: #212529;
+      background-color: #f8f9fa; // Fond léger pour le total
+    }
+    .total-label {
+      padding-right: 10px;
+    }
+    .total-amount {
+       font-size: 1.1em; // Mettre le total en évidence
+    }
+  }
+  
+  // Styles pour les badges de statut
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px; // Taille du badge
+    font-size: 0.8em; // Taille de police dans le badge
+    font-weight: 700; // Texte en gras
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.3rem; // Coins arrondis
+    color: #fff; // Couleur de texte par défaut (blanc)
+    text-transform: capitalize; // Première lettre en majuscule
+  
+    // Utiliser les classes générées dynamiquement (ex: status-en-attente)
+    &.status-en-attente,
+    &.status-en-préparation {
+      background-color: #ffc107; // Jaune/Orange
+      color: #333; // Texte foncé pour contraste
+    }
+    &.status-expédiée {
+      background-color: #17a2b8; // Bleu/Cyan
+    }
+    &.status-livrée {
+      background-color: #28a745; // Vert
+    }
+    &.status-annulée {
+      background-color: #6c757d; // Gris
+    }
+  }
+  
+  // Styles pour les messages d'alerte (erreur ou chargement)
+  .alert {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.95em;
+  
+    &.alert-danger {
+      color: #721c24;
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+    }
+    // Ajouter .alert-info si besoin pour le message de chargement
+  }
+  
+  // Pipe personnalisé pour remplacer les espaces (juste pour info, pas de style direct)
+  // La classe CSS est générée dans le HTML via: status-{{ order.status | lowercase | replace:' ':'-' }}
+  // Exemple: 'En préparation' devient 'status-en-préparation'

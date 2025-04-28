@@ -1,0 +1,144 @@
+// src/app/pages/contact/contact.component.scss
+@use 'sass:color'; // <<< Ajouter cet import en haut
+
+// Variables (réutiliser les variables globales serait mieux à terme)
+$primary-color: #007bff;
+$error-color: #dc3545;
+$success-color: #28a745;
+$label-color: #495057;
+$input-border-color: #ced4da;
+$input-focus-border-color: color.adjust($primary-color, $alpha: -0.5);
+$input-bg-color: #ffffff;
+
+// Conteneur de la page contact
+.contact-page-container {
+  max-width: 700px;
+  margin: 50px auto; // Augmenter marge haute/basse
+  padding: 35px 45px; // Augmenter padding
+  background-color: #ffffff; // Fond blanc
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); // Ombre un peu plus prononcée
+  border: 1px solid #e9ecef; // Bordure légère
+}
+
+// Titre H2
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #343a40; // Texte un peu plus foncé
+  font-size: 2em; // Plus grand
+}
+
+// Paragraphe d'introduction
+.contact-intro {
+  text-align: center;
+  color: #6c757d; // Gris standard
+  margin-bottom: 35px; // Plus d'espace
+  line-height: 1.7; // Interligne
+}
+
+// Style du formulaire
+.contact-form {
+  .form-group {
+    margin-bottom: 28px; // Plus d'espace entre les champs
+
+    label {
+      display: block;
+      margin-bottom: 10px; // Espace sous le label
+      font-weight: 600; // Label un peu plus gras
+      color: $label-color;
+      font-size: 0.9em; // Taille ajustée
+      text-transform: uppercase; // Optionnel: Majuscules
+      letter-spacing: 0.5px; // Optionnel: Espacement
+    }
+
+    // Styles communs pour input et textarea
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 14px 18px; // Padding interne plus grand
+      border: 1px solid $input-border-color;
+      border-radius: 5px;
+      font-size: 1em;
+      background-color: $input-bg-color;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+      color: #343a40; // Couleur du texte saisi
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px $input-focus-border-color;
+      }
+
+      &::placeholder {
+        color: #adb5bd; // Placeholder plus clair
+        font-style: normal; // Pas d'italique
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px; // Plus haut
+    }
+  }
+
+  // Style des messages d'erreur sous les champs
+  .error-message {
+    color: $error-color;
+    font-size: 0.8em; // Plus petit
+    margin-top: 8px;
+    font-weight: 500;
+  }
+}
+
+// Conteneur pour le bouton d'envoi
+.form-actions {
+  text-align: center;
+  margin-top: 35px;
+
+  button[type="submit"] {
+    cursor: pointer;
+    padding: 14px 40px; // Bouton plus grand
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em; // Taille ajustée
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+
+    &:hover {
+      background-color: color.adjust($primary-color, $lightness: -10%);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Styles pour le message de retour (succès ou erreur globale)
+.submit-feedback {
+  margin-top: 30px; // Plus d'espace
+  padding: 15px 25px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.95em;
+
+  &.success {
+    background-color: color.adjust($success-color, $lightness: 55%, $alpha: -0.1); // Fond vert très pâle
+    color: color.adjust($success-color, $lightness: -15%); // <<< CORRECTION ICI (utilisation de color.adjust)
+    border: 1px solid color.adjust($success-color, $lightness: 40%, $alpha: -0.3); // Bordure verte pâle
+  }
+
+  &.error {
+    background-color: color.adjust($error-color, $lightness: 40%, $alpha: -0.1); // Fond rouge très pâle
+    color: color.adjust($error-color, $lightness: -10%); // <<< CORRECTION ICI (utilisation de color.adjust)
+    border: 1px solid color.adjust($error-color, $lightness: 30%, $alpha: -0.4); // Bordure rouge pâle
+  }
+}

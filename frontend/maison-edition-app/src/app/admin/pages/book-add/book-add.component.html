@@ -1,0 +1,17 @@
+<!-- src/app/admin/pages/book-add/book-add.component.html -->
+<div class="admin-page-header">
+    <h2>{{ pageTitle }}</h2>
+    <p>Remplissez les informations ci-dessous pour ajouter un livre au catalogue.</p>
+  </div>
+  
+  <div class="admin-page-content">
+    <!--
+      Utilisation de notre composant formulaire réutilisable app-book-form.
+      - On ne passe pas d'[initialData] car c'est un ajout.
+      - On écoute les événements (formSubmit) et (cancel) émis par le formulaire.
+    -->
+    <app-book-form
+      (formSubmit)="handleBookAdd($event)"
+      (cancel)="handleCancel()">
+    </app-book-form>
+  </div>

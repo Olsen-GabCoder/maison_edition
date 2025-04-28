@@ -1,0 +1,46 @@
+// src/app/admin/pages/book-edit/book-edit.component.scss
+
+// Styles pour l'en-tête (si non globaux)
+.admin-page-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+  
+    h2 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      font-size: 1.8em;
+      font-weight: 600;
+      color: #343a40;
+    }
+    p {
+      margin-bottom: 0;
+      color: #6c757d;
+      font-size: 1em;
+    }
+  }
+  
+  // Pas de style spécifique nécessaire ici,
+  // car le book-form a ses propres styles.
+  
+  // Styles pour les messages d'alerte (copiés si besoin)
+  .alert {
+    padding: 15px 25px;
+    margin-top: 25px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid transparent;
+  
+    &.alert-danger {
+       background-color: #f8d7da;
+       color: #58151c;
+       border-color: #f1aeb5;
+    }
+    &.alert-loading {
+      background-color: #fefce8;
+      color: #713f12;
+      border-color: #fef08a;
+      font-style: italic;
+    }
+  }

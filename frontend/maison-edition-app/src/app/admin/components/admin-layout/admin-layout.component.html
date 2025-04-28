@@ -1,0 +1,33 @@
+<!-- src/app/admin/components/admin-layout/admin-layout.component.html -->
+<div class="admin-container">
+
+  <!-- Sidebar (colonne de navigation gauche) -->
+  <aside class="admin-sidebar">
+    <!-- Titre du panel admin -->
+    <h2>PANEL ADMIN</h2>
+
+    <!-- Navigation principale de l'admin -->
+    <nav class="admin-nav">
+      <!-- Chaque lien pointe vers une route enfant définie dans admin.routes.ts -->
+      <!-- routerLinkActive="active" ajoute la classe CSS 'active' au lien courant -->
+      <a routerLink="dashboard" routerLinkActive="active">Tableau de Bord</a>
+      <a routerLink="books" routerLinkActive="active">Gestion Livres</a>
+      <a routerLink="messages" routerLinkActive="active">Messages Reçus</a>
+      <!-- Le lien vers les commandes est bien présent et correct -->
+      <a routerLink="orders" routerLinkActive="active">Commandes</a>
+    </nav>
+
+    <!-- Section pour les actions (ex: déconnexion) -->
+    <div class="admin-actions">
+      <!-- Le clic sur ce bouton appelle la méthode logout() du composant TS -->
+      <button (click)="logout()">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Zone principale où le contenu des pages admin s'affichera -->
+  <main class="admin-content">
+    <!-- Directive Angular Router qui charge le composant de la route enfant active -->
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

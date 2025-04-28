@@ -1,0 +1,75 @@
+<!-- src/app/admin/pages/book-management/book-management.component.html -->
+<div class="admin-page-header">
+    <h2>Gestion des Livres</h2>
+    <p>Ajoutez, modifiez ou supprimez des livres du catalogue.</p>
+    <!-- Le clic appelle la méthode addBook() du composant -->
+    <button class="btn btn-primary btn-add" (click)="addBook()">
+      Ajouter un nouveau livre
+    </button>
+  </div>
+  
+  <div class="admin-page-content book-management-container">
+  
+    <!-- Utilisation de ng-container avec le pipe async pour gérer l'observable books$ -->
+    <!-- La variable 'books' ne sera disponible que si l'observable émet une valeur non null/undefined -->
+    <ng-container *ngIf="books$ | async as books; else loading">
+  
+      <!-- Afficher la table seulement si le tableau 'books' contient des éléments -->
+      <div *ngIf="books.length > 0; else noBooks" class="books-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Couverture</th>
+              <th>Titre</th>
+              <th>Auteur</th>
+              <th>Catégorie</th>
+              <th>Prix</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Boucle sur chaque livre dans le tableau 'books' -->
+            <tr *ngFor="let book of books">
+              <td>{{ book.id }}</td>
+              <td>
+                <!-- Affichage de l'image de couverture -->
+                <!-- onerror gère le cas où l'image ne se charge pas -->
+                <img [src]="book.coverUrl" [alt]="'Couverture de ' + book.title" class="table-cover-preview"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
+                <!-- Message alternatif si l'image est cassée -->
+                <span style="display: none; font-style: italic; font-size: 0.8em; color: #888;">(Image indisponible)</span>
+              </td>
+              <td>{{ book.title }}</td>
+              <td>{{ book.author }}</td>
+              <td>{{ book.category }}</td>
+              <!-- Pipe currency pour formater le prix en Euros -->
+              <td>{{ book.price | currency:'EUR' }}</td>
+              <td class="actions-cell">
+                <!-- Boutons pour les actions, appelant les méthodes correspondantes -->
+                <!-- Les classes btn-secondary et btn-danger sont correctes ici -->
+                <button class="btn btn-secondary btn-sm" (click)="editBook(book.id)" title="Modifier ce livre">
+                  Modifier
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="deleteBook(book.id, book.title)" title="Supprimer ce livre">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <!-- Template (#noBooks) affiché si books.length est 0 -->
+      <ng-template #noBooks>
+        <div class="alert alert-info">Aucun livre trouvé dans le catalogue.</div>
+      </ng-template>
+  
+    </ng-container>
+  
+    <!-- Template (#loading) affiché pendant que l'observable books$ n'a pas encore émis -->
+    <ng-template #loading>
+      <div class="alert alert-loading">Chargement des livres...</div>
+    </ng-template>
+  
+  </div>

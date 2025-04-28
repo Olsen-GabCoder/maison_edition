@@ -1,0 +1,30 @@
+<!-- src/app/admin/pages/book-edit/book-edit.component.html -->
+<div class="admin-page-header">
+    <!-- Le titre est mis à jour dynamiquement dans le .ts -->
+    <h2>{{ pageTitle }}</h2>
+    <p *ngIf="bookToEdit$ | async as book">Modifiez les informations du livre ci-dessous.</p>
+    <p *ngIf="!(bookToEdit$ | async)">Chargement des informations du livre...</p>
+  </div>
+  
+  <div class="admin-page-content">
+    <!-- Utilisation de ng-container pour résoudre l'observable bookToEdit$ -->
+    <ng-container *ngIf="bookToEdit$ | async as book; else loadingOrError">
+      <!-- Afficher le formulaire seulement si un livre a été trouvé -->
+      <app-book-form
+        [isEditMode]="true"
+        [initialData]="book"
+        (formSubmit)="handleBookUpdate($event)"
+        (cancel)="handleCancel()">
+      </app-book-form>
+    </ng-container>
+  
+    <!-- Template si l'observable est en cours ou si le livre n'a pas été trouvé -->
+    <ng-template #loadingOrError>
+      <div *ngIf="pageTitle.startsWith('Erreur:')" class="alert alert-danger">
+         {{ pageTitle }}
+      </div>
+       <div *ngIf="!pageTitle.startsWith('Erreur:')" class="alert alert-loading">
+         Chargement...
+       </div>
+    </ng-template>
+  </div>

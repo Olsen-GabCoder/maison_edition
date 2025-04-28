@@ -1,0 +1,104 @@
+// src/app/admin/components/book-form/book-form.component.scss
+@use 'sass:color';
+
+// Variables (devraient être globales)
+$primary-color: #0d6efd;
+$secondary-color: #6c757d;
+$danger-color: #dc3545;
+$input-border-color: #ced4da;
+$input-focus-border-color: color.adjust($primary-color, $alpha: -0.5);
+$label-color: #495057;
+
+// Conteneur du formulaire
+.book-form-container {
+  background-color: #fff; // Peut être intégré dans une page avec un fond différent
+  padding: 30px 40px;
+  border-radius: 8px;
+  // box-shadow: 0 4px 10px rgba(0,0,0,0.05); // Optionnel si intégré dans une page déjà en boîte
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+    color: #343a40;
+  }
+}
+
+// Style des groupes label+input
+.form-group {
+  margin-bottom: 25px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: $label-color;
+    font-size: 0.9em;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="number"],
+  input[type="text"], // Pour catégorie
+  textarea {
+    width: 100%;
+    padding: 10px 14px; // Padding ajusté
+    border: 1px solid $input-border-color;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px $input-focus-border-color;
+    }
+    &::placeholder { color: #adb5bd; }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+// Style des messages d'erreur
+.error-message {
+  color: $danger-color;
+  font-size: 0.85em;
+  margin-top: 6px;
+}
+
+// Conteneur pour les boutons d'action
+.form-actions {
+  margin-top: 35px;
+  display: flex; // Pour aligner les boutons
+  justify-content: flex-end; // Pousse les boutons à droite
+  gap: 15px; // Espace entre les boutons
+
+  // Styles génériques des boutons (pourraient être globaux)
+  .btn {
+    cursor: pointer;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+
+    &:active { transform: scale(0.98); }
+
+    &.btn-primary {
+      background-color: $primary-color;
+      color: white;
+      &:hover { background-color: color.adjust($primary-color, $lightness: -10%); }
+       &:disabled { background-color: #a0cfff; cursor: not-allowed;} // Style si désactivé
+    }
+    &.btn-secondary {
+      background-color: $secondary-color;
+      color: white;
+       &:hover { background-color: color.adjust($secondary-color, $lightness: -10%); }
+    }
+  }
+}

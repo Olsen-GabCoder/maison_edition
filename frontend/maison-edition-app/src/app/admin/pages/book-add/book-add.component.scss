@@ -1,0 +1,33 @@
+// src/app/admin/pages/book-add/book-add.component.scss
+
+// Optionnel: Importer des styles communs si nécessaire
+// @import '../../components/admin-layout/admin-layout.component.scss';
+
+// Styles spécifiques à la page d'ajout si besoin
+// ...
+
+// Styles pour l'en-tête (si non globaux)
+.admin-page-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+  
+    h2 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      font-size: 1.8em;
+      font-weight: 600;
+      color: #343a40;
+    }
+    p {
+      margin-bottom: 0;
+      color: #6c757d;
+      font-size: 1em;
+    }
+  }
+  
+  .admin-page-content {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+  }

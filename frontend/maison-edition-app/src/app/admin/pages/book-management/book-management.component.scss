@@ -1,0 +1,223 @@
+// src/app/admin/pages/book-management/book-management.component.scss
+@use 'sass:color'; // Utilisation du module Sass pour manipuler les couleurs
+
+// --- Variables (Idéalement, à terme, celles-ci viendraient d'un fichier global) ---
+$primary-color: #0d6efd; // Bleu type Bootstrap
+$secondary-color: #6c757d; // Gris type Bootstrap
+$danger-color: #dc3545; // Rouge type Bootstrap
+$success-color: #198754; // Vert type Bootstrap
+$info-color: #0dcaf0; // Cyan type Bootstrap
+$warning-color: #ffc107; // Jaune type Bootstrap
+$light-grey: #f8f9fa; // Gris très clair
+$border-color: #dee2e6; // Couleur de bordure standard
+$text-color-dark: #212529; // Texte principal foncé
+$text-color-muted: #6c757d; // Texte secondaire gris
+
+// --- Styles pour l'En-tête de la Page Admin ---
+.admin-page-header {
+  display: flex;            // Utilise Flexbox pour aligner les éléments
+  justify-content: space-between; // Pousse le bouton à droite
+  align-items: center;      // Centre verticalement les éléments
+  border-bottom: 1px solid $border-color; // Ligne de séparation
+  padding-bottom: 20px;     // Espace sous l'en-tête
+  margin-bottom: 30px;      // Espace avant le contenu principal
+
+  // Conteneur pour le titre H2 et le paragraphe P
+  div {
+    h2 {
+      margin-top: 0;
+      margin-bottom: 8px; // Espace entre titre et paragraphe
+      font-size: 1.9em; // Taille du titre
+      font-weight: 600; // Épaisseur
+      color: $text-color-dark;
+    }
+    p {
+      margin-bottom: 0; // Pas de marge en bas du paragraphe
+      color: $text-color-muted;
+      font-size: 1em;
+    }
+  }
+
+  // --- Styles Génériques pour les Boutons (préfixés par .btn) ---
+  .btn {
+    cursor: pointer;            // Curseur main
+    padding: 8px 18px;          // Espacement interne par défaut
+    border: 1px solid transparent; // Bordure transparente par défaut
+    border-radius: 5px;         // Coins arrondis
+    font-weight: 500;           // Épaisseur de police
+    line-height: 1.5;           // Hauteur de ligne standard
+    text-align: center;
+    text-decoration: none;      // Pas de soulignement
+    vertical-align: middle;
+    user-select: none;          // Empêche la sélection du texte du bouton
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+                border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+                transform 0.1s ease; // Transitions douces
+
+    // Style Primaire (Bleu) - Pour le bouton "Ajouter"
+    &.btn-primary {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      color: white;
+      &:hover { background-color: color.adjust($primary-color, $lightness: -8%); border-color: color.adjust($primary-color, $lightness: -10%); }
+    }
+    // Style Secondaire (Gris) - Sera réutilisé dans la table
+     &.btn-secondary {
+      background-color: $secondary-color;
+      border-color: $secondary-color;
+      color: white;
+       &:hover { background-color: color.adjust($secondary-color, $lightness: -8%); border-color: color.adjust($secondary-color, $lightness: -10%); }
+    }
+    // Style Danger (Rouge) - Sera réutilisé dans la table
+     &.btn-danger {
+       background-color: $danger-color;
+       border-color: $danger-color;
+       color: white;
+        &:hover { background-color: color.adjust($danger-color, $lightness: -8%); border-color: color.adjust($danger-color, $lightness: -10%); }
+     }
+    // Style pour les boutons plus petits (utilisé dans la table)
+     &.btn-sm {
+        padding: 6px 12px; // Padding réduit
+        font-size: 0.875em; // Taille de police réduite
+     }
+
+     // Effet au clic
+     &:active {
+       transform: scale(0.97); // Léger rétrécissement
+     }
+  } // Fin des styles .btn
+
+  // Style spécifique pour le bouton "Ajouter un nouveau livre" en haut
+  .btn-add {
+    font-size: 0.95em;
+  }
+} // Fin des styles .admin-page-header
+
+
+// --- Styles pour le Conteneur du Tableau ---
+.book-management-container {
+   background-color: #fff; // Fond blanc
+   padding: 30px;          // Espacement interne
+   border-radius: 8px;     // Coins arrondis
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06); // Ombre portée
+}
+
+// Wrapper pour la table, permet le défilement horizontal sur petits écrans
+.books-table-wrapper {
+  overflow-x: auto;
+}
+
+// --- Styles pour la Table HTML ---
+table {
+  width: 100%;            // Occupe toute la largeur disponible
+  border-collapse: collapse; // Fusionne les bordures des cellules
+  margin-top: 20px;       // Espace au-dessus de la table
+
+  // En-tête de la table (thead)
+  thead {
+    background-color: $light-grey; // Fond gris clair
+    border-bottom: 2px solid $border-color; // Ligne de séparation plus épaisse
+
+    th { // Cellules d'en-tête (<th>)
+      padding: 14px 16px;       // Espacement interne
+      text-align: left;         // Alignement à gauche
+      font-weight: 600;         // Gras
+      color: #495057;          // Couleur du texte
+      font-size: 0.85em;        // Taille de police
+      text-transform: uppercase;// Texte en majuscules
+      letter-spacing: 0.6px;    // Espacement des lettres
+      white-space: nowrap;      // Empêche le passage à la ligne
+    }
+  }
+
+  // Corps de la table (tbody)
+  tbody {
+    tr { // Lignes du tableau (<tr>)
+      border-bottom: 1px solid $border-color; // Ligne de séparation entre les lignes
+      transition: background-color 0.15s ease; // Effet de survol doux
+
+      &:last-child { border-bottom: none; } // Pas de bordure sous la dernière ligne
+
+      &:hover { background-color: #f1f7ff; } // Léger fond bleu très pâle au survol
+
+      td { // Cellules de données (<td>)
+        padding: 12px 16px;       // Espacement interne
+        vertical-align: middle;   // Centre verticalement le contenu
+        font-size: 0.95em;        // Taille de police
+        color: $text-color-dark;  // Couleur du texte
+
+        // Style de la miniature de couverture
+        .table-cover-preview {
+          max-width: 40px;    // Largeur max réduite
+          max-height: 55px;   // Hauteur max réduite
+          object-fit: contain;// Garde les proportions
+          border: 1px solid #f0f0f0; // Bordure très fine
+          border-radius: 3px;
+          vertical-align: middle; // Aligné avec le texte
+          margin-right: 5px;     // Petit espace à droite
+        }
+
+        // === Styles pour la Cellule Actions ===
+        &.actions-cell {
+          white-space: nowrap;  // Empêche les boutons de passer à la ligne
+          text-align: right;    // Aligne les boutons à droite
+
+          // Ciblage des boutons DANS cette cellule
+          .btn {
+            margin-left: 8px;       // Espace entre les boutons
+            padding: 6px 12px;      // Appliquer la taille btn-sm
+            font-size: 0.875em;   // Appliquer la taille btn-sm
+            vertical-align: middle; // Assurer l'alignement vertical
+
+            &:first-child { margin-left: 0; } // Pas de marge gauche pour le premier
+
+            // Styles spécifiques pour chaque type de bouton DANS LA TABLE
+            &.btn-secondary { // Bouton Modifier
+              background-color: $secondary-color;
+              border-color: $secondary-color;
+              color: white;
+               &:hover {
+                  background-color: color.adjust($secondary-color, $lightness: -8%);
+                  border-color: color.adjust($secondary-color, $lightness: -10%);
+                }
+            }
+
+            &.btn-danger { // Bouton Supprimer
+               background-color: $danger-color;
+               border-color: $danger-color;
+               color: white;
+                &:hover {
+                  background-color: color.adjust($danger-color, $lightness: -8%);
+                  border-color: color.adjust($danger-color, $lightness: -10%);
+                }
+            }
+          } // Fin des styles .btn dans .actions-cell
+        } // Fin des styles .actions-cell
+      } // Fin des styles td
+    } // Fin des styles tr
+  } // Fin des styles tbody
+} // Fin des styles de la table
+
+// --- Styles pour les Messages d'Alerte (Chargement, Aucun livre) ---
+.alert {
+  padding: 15px 25px; // Espacement interne
+  margin-top: 25px;   // Marge au-dessus
+  border-radius: 6px; // Coins arrondis
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid transparent; // Bordure par défaut
+
+  // Style pour l'info (Aucun livre)
+  &.alert-info {
+    background-color: #e0f2fe; // Fond bleu très clair
+    color: #075985;          // Texte bleu foncé
+    border-color: #bae6fd;    // Bordure bleu clair
+  }
+  // Style pour le chargement
+  &.alert-loading {
+    background-color: #fefce8; // Fond jaune très clair
+    color: #713f12;          // Texte brun/jaune
+    border-color: #fef08a;    // Bordure jaune clair
+    font-style: italic;
+  }
+} // Fin des styles .alert

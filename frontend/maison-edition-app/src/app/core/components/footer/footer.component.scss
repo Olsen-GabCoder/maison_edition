@@ -1,0 +1,48 @@
+// src/app/core/components/footer/footer.component.scss
+
+// Variables de style pour le Footer
+$footer-bg: #2c3e50; // Un bleu/gris foncé différent
+$footer-text-color: #bdc3c7; // Texte gris clair
+$footer-link-color: #ecf0f1; // Liens presque blancs
+$footer-link-hover-color: #ffffff; // Liens blancs au survol
+
+.app-footer {
+  background-color: $footer-bg;
+  color: $footer-text-color;
+  padding: 30px 0; // Plus d'espace vertical
+  margin-top: 50px; // Plus d'espace au-dessus du footer
+  // border-top: 3px solid $footer-link-color; // Optionnel: une bordure haute colorée
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 25px;
+  display: flex; // Pour aligner plusieurs éléments si besoin
+  flex-direction: column; // Éléments les uns sous les autres par défaut
+  align-items: center; // Centrer horizontalement
+  text-align: center;
+
+  p {
+    margin: 0 0 10px 0; // Marge en bas du paragraphe copyright
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+
+  // Style pour une section de liens éventuelle
+  .footer-links {
+    margin-top: 10px;
+    a {
+      color: $footer-link-color;
+      text-decoration: none;
+      margin: 0 10px; // Espace entre les liens
+      font-size: 0.85em;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: $footer-link-hover-color;
+        text-decoration: underline; // Souligner au survol
+      }
+    }
+  }
+}

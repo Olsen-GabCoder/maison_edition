@@ -1,0 +1,80 @@
+<!-- src/app/admin/components/book-form/book-form.component.html -->
+<!-- novalidate désactive la validation HTML5 -->
+<form [formGroup]="bookForm" (ngSubmit)="onSubmit()" novalidate class="book-form-container">
+
+    <h3>{{ isEditMode ? 'Modifier le Livre' : 'Ajouter un Nouveau Livre' }}</h3>
+  
+    <!-- Champ Titre -->
+    <div class="form-group">
+      <label for="title">Titre</label>
+      <input type="text" id="title" formControlName="title" placeholder="Titre du livre">
+      <div *ngIf="(isSubmitted || formControls['title'].touched) && formControls['title'].errors?.['required']" class="error-message">
+        Le titre est obligatoire.
+      </div>
+    </div>
+  
+    <!-- Champ Auteur -->
+    <div class="form-group">
+      <label for="author">Auteur</label>
+      <input type="text" id="author" formControlName="author" placeholder="Nom de l'auteur">
+      <div *ngIf="(isSubmitted || formControls['author'].touched) && formControls['author'].errors?.['required']" class="error-message">
+        L'auteur est obligatoire.
+      </div>
+    </div>
+  
+    <!-- Champ URL Couverture -->
+    <div class="form-group">
+      <label for="coverUrl">URL de la Couverture</label>
+      <input type="url" id="coverUrl" formControlName="coverUrl" placeholder="https://... ou assets/images/...">
+      <div *ngIf="(isSubmitted || formControls['coverUrl'].touched) && formControls['coverUrl'].errors?.['required']" class="error-message">
+        L'URL de la couverture est obligatoire.
+      </div>
+      <!-- On pourrait ajouter une validation de pattern URL plus tard -->
+    </div>
+  
+    <!-- Champ Catégorie -->
+    <div class="form-group">
+      <label for="category">Catégorie</label>
+      <input type="text" id="category" formControlName="category" placeholder="Ex: Fantasy, Science-Fiction...">
+      <div *ngIf="(isSubmitted || formControls['category'].touched) && formControls['category'].errors?.['required']" class="error-message">
+        La catégorie est obligatoire.
+      </div>
+    </div>
+  
+    <!-- Champ Prix -->
+    <div class="form-group">
+      <label for="price">Prix (€)</label>
+      <!-- step="0.01" pour les navigateurs qui le supportent -->
+      <input type="number" id="price" formControlName="price" placeholder="Ex: 19.95" step="0.01">
+      <div *ngIf="(isSubmitted || formControls['price'].touched) && formControls['price'].errors?.['required']" class="error-message">
+        Le prix est obligatoire.
+      </div>
+       <div *ngIf="(isSubmitted || formControls['price'].touched) && formControls['price'].errors?.['min']" class="error-message">
+        Le prix doit être supérieur à 0.
+      </div>
+    </div>
+  
+    <!-- Champ Résumé -->
+    <div class="form-group">
+      <label for="summary">Résumé</label>
+      <textarea id="summary" formControlName="summary" rows="5" placeholder="Bref résumé du livre (20 caractères min)"></textarea>
+      <div *ngIf="(isSubmitted || formControls['summary'].touched) && formControls['summary'].errors?.['required']" class="error-message">
+        Le résumé est obligatoire.
+      </div>
+       <div *ngIf="(isSubmitted || formControls['summary'].touched) && formControls['summary'].errors?.['minlength']" class="error-message">
+        Le résumé doit faire au moins 20 caractères.
+      </div>
+    </div>
+  
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="bookForm.invalid && isSubmitted">
+        {{ isEditMode ? 'Enregistrer les modifications' : 'Ajouter le livre' }}
+      </button>
+      <!-- Le bouton Annuler appelle la méthode onCancel() -->
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Annuler
+      </button>
+    </div>
+  
+  </form>

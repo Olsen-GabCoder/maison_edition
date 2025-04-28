@@ -1,0 +1,102 @@
+<!-- src/app/admin/pages/order-detail/order-detail.component.html -->
+<div class="admin-page-header">
+    <a routerLink="../" class="back-link">← Retour à la liste des commandes</a>
+    <h2>Détails de la Commande</h2>
+  </div>
+  
+  <div class="admin-page-content">
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  
+    <div *ngIf="order$ | async as order; else loading">
+      <div *ngIf="!errorMessage">
+  
+        <div class="order-detail-grid">
+  
+          <!-- Carte 1: Informations Générales -->
+          <div class="detail-card">
+            <h3>Informations Générales</h3>
+            <p><strong>Numéro de Commande :</strong> {{ order.orderNumber }}</p>
+            <p><strong>ID Technique :</strong> <code class="code-inline">{{ order.id }}</code></p>
+            <p><strong>Date Commande :</strong> {{ order.orderDate | date:'dd/MM/yyyy à HH:mm:ss' }}</p>
+            <p>
+              <strong>Statut :</strong>
+              <!-- CORRECTION: Utilisation de [class] et de la fonction du TS -->
+              <span class="status-badge" [class]="getStatusBadgeClass(order.status)">
+                {{ order.status }}
+              </span>
+            </p>
+            <p><strong>Montant Total :</strong> {{ order.totalAmount | currency:'EUR':'symbol':'1.2-2' }}</p>
+            <p><strong>Dernière Mise à Jour :</strong> {{ order.lastUpdate ? (order.lastUpdate | date:'dd/MM/yyyy HH:mm') : 'N/A' }}</p>
+          </div>
+  
+          <!-- Carte 2: Informations Client -->
+          <div class="detail-card">
+            <h3>Informations Client</h3>
+            <p><strong>Nom :</strong> {{ order.customerName }}</p>
+            <p><strong>Email :</strong> <a [href]="'mailto:' + order.customerEmail" title="Envoyer un email">{{ order.customerEmail }}</a></p>
+            <p><strong>ID Client (si enregistré) :</strong> {{ order.customerId ?? 'Invité' }}</p>
+          </div>
+  
+          <!-- Carte 3: Adresse de Livraison -->
+          <div class="detail-card">
+            <h3>Adresse de Livraison</h3>
+            <ng-container *ngIf="order.shippingAddress; else noAddress">
+              <p>{{ order.shippingAddress.street }}</p>
+              <p>{{ order.shippingAddress.zipCode }} {{ order.shippingAddress.city }}</p>
+              <p>{{ order.shippingAddress.country | uppercase }}</p>
+            </ng-container>
+            <ng-template #noAddress>
+              <p>Non spécifiée.</p>
+            </ng-template>
+          </div>
+  
+          <!-- Carte 4: Articles Commandés -->
+          <div class="detail-card items-card">
+            <h3>Articles Commandés</h3>
+            <div *ngIf="order.items && order.items.length > 0; else noItems" class="table-responsive">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Livre (ID)</th>
+                    <th>Quantité</th>
+                    <th>Prix Unitaire</th>
+                    <th>Sous-total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of order.items">
+                    <td>{{ item.title }} <small>({{ item.bookId }})</small></td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">{{ item.price | currency:'EUR':'symbol' }}</td>
+                    <td class="text-right">{{ (item.quantity * item.price) | currency:'EUR':'symbol' }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                   <tr>
+                      <td colspan="3" class="text-right total-label"><strong>Total Commande :</strong></td>
+                      <td class="text-right total-amount"><strong>{{ order.totalAmount | currency:'EUR':'symbol' }}</strong></td>
+                   </tr>
+                </tfoot>
+              </table>
+            </div>
+            <ng-template #noItems>
+              <p>Aucun détail d'article disponible pour cette commande.</p>
+            </ng-template>
+          </div>
+  
+        </div> <!-- Fin .order-detail-grid -->
+      </div> <!-- Fin *ngIf="!errorMessage" -->
+    </div> <!-- Fin *ngIf="order$ | async as order" -->
+  
+    <ng-template #loading>
+      <div *ngIf="!errorMessage">
+         <p>Chargement des détails de la commande...</p>
+      </div>
+    </ng-template>
+  
+  </div> <!-- Fin .admin-page-content -->
+  
+  <!-- LIGNE REDONDANTE SUPPRIMÉE CI-DESSOUS -->
+  <!-- {{ '' | replace:' ':'-' }} -->

@@ -1,0 +1,65 @@
+<!-- src/app/pages/contact/contact.component.html -->
+<div class="contact-page-container">
+    <h2>Contactez-nous</h2>
+    <p class="contact-intro">
+      Une question, une suggestion, ou une proposition de manuscrit ? Utilisez le formulaire ci-dessous.
+    </p>
+  
+    <!-- Le formulaire est lié au FormGroup 'contactForm' -->
+    <!-- (ngSubmit) appelle la méthode onSubmit() lors de la soumission -->
+    <!-- novalidate désactive la validation HTML5 par défaut (on utilise celle d'Angular) -->
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" novalidate class="contact-form">
+  
+      <!-- Champ Nom -->
+      <div class="form-group">
+        <label for="name">Nom complet</label>
+        <input type="text" id="name" formControlName="name" placeholder="Votre nom et prénom">
+        <!-- Messages d'erreur pour le champ 'name' -->
+        <div *ngIf="isSubmitted && formControls['name'].errors?.['required']" class="error-message">
+          Le nom est requis.
+        </div>
+      </div>
+  
+      <!-- Champ Email -->
+      <div class="form-group">
+        <label for="email">Adresse Email</label>
+        <input type="email" id="email" formControlName="email" placeholder="exemple@domaine.com">
+        <!-- Messages d'erreur pour le champ 'email' -->
+        <div *ngIf="isSubmitted && formControls['email'].errors?.['required']" class="error-message">
+          L'adresse email est requise.
+        </div>
+        <div *ngIf="isSubmitted && formControls['email'].errors?.['email']" class="error-message">
+          Veuillez saisir une adresse email valide.
+        </div>
+      </div>
+  
+      <!-- Champ Message -->
+      <div class="form-group">
+        <label for="message">Votre Message</label>
+        <textarea id="message" formControlName="message" rows="6" placeholder="Écrivez votre message ici... (10 caractères minimum)"></textarea>
+        <!-- Messages d'erreur pour le champ 'message' -->
+        <div *ngIf="isSubmitted && formControls['message'].errors?.['required']" class="error-message">
+          Le message ne peut pas être vide.
+        </div>
+        <div *ngIf="isSubmitted && formControls['message'].errors?.['minlength']" class="error-message">
+          Le message doit contenir au moins 10 caractères.
+        </div>
+      </div>
+  
+      <!-- Bouton de soumission -->
+      <!-- On pourrait désactiver le bouton si le formulaire est invalide PENDANT la saisie,
+           mais l'approche actuelle (vérification uniquement sur onSubmit) est aussi courante.
+           [disabled]="contactForm.invalid"
+      -->
+      <div class="form-actions">
+        <button type="submit">Envoyer le message</button>
+      </div>
+  
+      <!-- Message global de succès ou d'erreur après soumission -->
+      <div *ngIf="submitMessage" class="submit-feedback"
+           [ngClass]="{'success': submitMessageType === 'success', 'error': submitMessageType === 'error'}">
+        {{ submitMessage }}
+      </div>
+  
+    </form>
+  </div>

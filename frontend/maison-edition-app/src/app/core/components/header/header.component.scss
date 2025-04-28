@@ -1,0 +1,99 @@
+// src/app/core/components/header/header.component.scss
+@use 'sass:color'; // Pour ajuster les couleurs
+
+// Variables de style pour le Header
+$header-bg: #ffffff;
+$header-text-color: #343a40;
+$header-link-color: #007bff;
+$header-link-hover-color: color.adjust($header-link-color, $lightness: -10%);
+$header-border-color: #e9ecef;
+$header-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+// Style général du header
+.app-header {
+  background-color: $header-bg;
+  border-bottom: 1px solid $header-border-color;
+  box-shadow: $header-shadow;
+  padding: 12px 0; // Ajustement du padding vertical
+  position: sticky; // Reste en haut lors du défilement
+  top: 0;
+  left: 0;
+  width: 100%; // Assure qu'il prend toute la largeur
+  z-index: 1000; // Pour être au-dessus des autres éléments
+}
+
+// Conteneur pour limiter la largeur et centrer
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 25px; // Un peu plus d'espace sur les côtés
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Styles pour le logo/titre
+.logo-container {
+  .logo-link {
+    text-decoration: none;
+    color: $header-text-color;
+
+    h1 {
+      margin: 0;
+      font-size: 1.7em; // Taille ajustée
+      font-weight: 700; // Plus gras
+      letter-spacing: -0.5px; // Léger resserrement
+    }
+  }
+}
+
+// Styles pour la navigation principale
+.main-navigation {
+  a { // Ces styles s'appliqueront à tous les liens, y compris le nouveau "Admin"
+    color: $header-text-color;
+    text-decoration: none;
+    padding: 8px 16px; // Padding ajusté
+    margin-left: 12px; // Espace entre les liens
+    border-radius: 5px; // Coins arrondis
+    transition: background-color 0.25s ease, color 0.25s ease;
+    font-weight: 500; // Épaisseur de la police
+    position: relative;
+    overflow: hidden;
+
+    // Effet de survol subtil
+    &:hover {
+      color: $header-link-hover-color;
+      background-color: color.adjust($header-link-color, $alpha: -0.92); // Fond très transparent
+    }
+
+    // Style pour le lien de la page active
+    &.active-link {
+      color: $header-link-color; // Couleur plus vive
+      font-weight: 700; // Plus gras
+    }
+  }
+}
+
+// Gestion simple du responsive pour le header
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column; // Logo au-dessus
+    align-items: center; // Centrer les éléments
+    padding: 0 15px; // Moins de padding latéral
+  }
+
+  .logo-container {
+    margin-bottom: 10px; // Espace sous le logo
+  }
+
+  .main-navigation {
+    width: 100%; // Prend toute la largeur
+    display: flex;
+    justify-content: center; // Centre les liens
+    a {
+      margin-left: 5px; // Espacement réduit
+      margin-right: 5px;
+      padding: 8px 10px; // Liens un peu moins larges
+    }
+  }
+}

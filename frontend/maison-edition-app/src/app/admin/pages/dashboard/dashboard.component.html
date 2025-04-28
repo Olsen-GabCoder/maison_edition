@@ -1,0 +1,55 @@
+<!-- src/app/admin/pages/dashboard/dashboard.component.html -->
+<div class="admin-page-header">
+  <h2>Tableau de Bord</h2>
+  <p>Bienvenue dans l'espace d'administration. Voici un aperçu rapide :</p>
+</div>
+
+<div class="admin-page-content dashboard-grid">
+
+  <!-- Carte pour le nombre de livres -->
+  <div class="dashboard-card">
+    <h3>Catalogue</h3>
+    <div class="card-content">
+      <!-- Utilise le pipe async pour afficher la valeur -->
+      <p class="card-number">{{ bookCount$ | async }}</p>
+      <p class="card-label">Livre(s) au total</p>
+    </div>
+    <div class="card-actions">
+      <!-- Lien relatif vers la gestion des livres -->
+      <a routerLink="../books">Gérer les livres</a>
+    </div>
+  </div>
+
+  <!-- Carte pour le nombre de messages -->
+  <div class="dashboard-card">
+    <h3>Messages</h3>
+    <div class="card-content">
+      <p class="card-number">{{ messageCount$ | async }}</p>
+      <p class="card-label">Message(s) reçu(s)</p>
+    </div>
+    <div class="card-actions">
+      <!-- Lien relatif vers la liste des messages -->
+      <a routerLink="../messages">Voir les messages</a>
+    </div>
+  </div>
+
+  <!-- Carte pour les Commandes (MISE À JOUR) -->
+  <!-- Retrait de la classe 'placeholder' -->
+  <div class="dashboard-card">
+    <h3>Commandes</h3>
+    <div class="card-content">
+      <!-- Affichage du nombre de commandes -->
+      <p class="card-number">{{ orderCount$ | async }}</p>
+      <!-- Libellé mis à jour -->
+      <p class="card-label">Commande(s) enregistrée(s)</p>
+    </div>
+    <div class="card-actions">
+      <!-- Lien relatif vers la liste des commandes -->
+      <a routerLink="../orders">Voir les commandes</a>
+    </div>
+  </div>
+  <!-- Fin Carte Commandes -->
+
+  <!-- Autres cartes peuvent être ajoutées ici si nécessaire -->
+
+</div>

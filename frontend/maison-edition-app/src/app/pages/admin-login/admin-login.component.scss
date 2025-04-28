@@ -1,0 +1,124 @@
+// src/app/pages/admin-login/admin-login.component.scss
+@use 'sass:color'; // Import pour color.adjust
+
+// Variables (pourrait être globalisé plus tard)
+$primary-color: #007bff;
+$error-color: #dc3545;
+$input-border-color: #ced4da;
+$input-focus-border-color: color.adjust($primary-color, $alpha: -0.5);
+$page-bg: #f4f6f9; // Fond légèrement gris/bleu
+$box-bg: #ffffff; // Fond de la boîte de login
+$box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); // Ombre plus prononcée
+
+// Conteneur principal de la page pour centrer la boîte
+.login-container {
+  display: flex;
+  justify-content: center; // Centre horizontalement
+  align-items: center;   // Centre verticalement
+  min-height: calc(100vh - 100px); // Hauteur minimale (ajuster si header/footer changent)
+  background-color: $page-bg;
+  padding: 40px 20px; // Espacement
+}
+
+// La boîte blanche contenant le formulaire
+.login-box {
+  background-color: $box-bg;
+  padding: 45px 55px; // Padding interne généreux
+  border-radius: 10px; // Coins plus arrondis
+  box-shadow: $box-shadow;
+  width: 100%;
+  max-width: 480px; // Largeur maximale
+
+  h2 { // Titre "Connexion Administrateur"
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 35px; // Plus d'espace en dessous
+    font-weight: 700; // Gras
+    font-size: 1.8em; // Plus grand
+    color: #2c3e50; // Couleur sombre
+  }
+}
+
+// Styles pour le formulaire lui-même
+.login-form {
+  .form-group { // Groupe pour chaque label + input + erreur
+    margin-bottom: 28px; // Espace entre les groupes
+
+    label { // Style des labels (Email, Mot de passe)
+      display: block; // Prend toute la largeur
+      margin-bottom: 10px; // Espace sous le label
+      font-weight: 600; // Gras
+      color: #495057; // Couleur gris foncé
+      font-size: 0.9em;
+    }
+
+    // Styles communs aux champs input
+    input[type="email"],
+    input[type="password"] {
+      width: 100%; // Prend toute la largeur
+      padding: 14px 18px; // Padding interne
+      border: 1px solid $input-border-color;
+      border-radius: 6px; // Coins arrondis
+      font-size: 1em;
+      box-sizing: border-box; // Pour que padding/border soient inclus dans la largeur
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+      &:focus { // Style quand le champ a le focus
+        outline: none; // Enlève l'outline moche par défaut
+        border-color: $primary-color; // Bordure bleue
+        box-shadow: 0 0 0 3px $input-focus-border-color; // Halo bleu pâle
+      }
+    }
+  }
+
+  // Style des messages d'erreur de validation (sous les champs)
+  .error-message {
+    color: $error-color; // Couleur rouge
+    font-size: 0.85em; // Petit texte
+    margin-top: 8px;    // Espace au-dessus
+  }
+
+  // Style du message d'erreur global (identifiants incorrects)
+  .login-error-feedback {
+    background-color: color.adjust($error-color, $lightness: 50%, $alpha: -0.1); // Fond rouge très pâle
+    color: color.adjust($error-color, $lightness: -10%); // Texte rouge foncé (corrigé)
+    border: 1px solid color.adjust($error-color, $lightness: 40%, $alpha: -0.4); // Bordure rouge pâle
+    border-radius: 5px;
+    padding: 12px 18px;
+    margin-bottom: 25px; // Espace en dessous
+    text-align: center;
+    font-size: 0.9em;
+    font-weight: 500;
+  }
+
+  // Conteneur pour le bouton
+  .form-actions {
+    margin-top: 35px; // Espace au-dessus du bouton
+
+    button[type="submit"] { // Style du bouton "Se connecter"
+      width: 100%;
+      padding: 15px 20px; // Bouton assez grand
+      background-color: $primary-color; // Couleur principale
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+
+      &:hover { // Style au survol
+        background-color: color.adjust($primary-color, $lightness: -10%);
+      }
+
+      &:active { // Style au clic
+         transform: scale(0.99); // Léger enfoncement
+      }
+
+      &:disabled { // Style si désactivé (non utilisé pour l'instant)
+         background-color: #b0bec5; // Gris
+         cursor: not-allowed;
+      }
+    }
+  }
+}

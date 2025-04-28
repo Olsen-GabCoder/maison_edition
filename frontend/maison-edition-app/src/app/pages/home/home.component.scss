@@ -1,0 +1,146 @@
+// src/app/pages/home/home.component.scss
+@use 'sass:math'; // Importer le module math pour la division
+@use 'sass:color'; // Importer le module color pour les ajustements de couleur
+
+// Variables (optionnel, mais utile pour la cohérence)
+$primary-color: #007bff;
+$secondary-color: #6c757d;
+$text-color: #343a40;
+$light-grey: #f8f9fa;
+$card-bg: #ffffff;
+$card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+$card-hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+$border-radius: 8px;
+
+// Styles généraux pour la page (titre H2)
+h2 {
+    text-align: center;
+    margin-top: 40px; // Plus d'espace en haut
+    margin-bottom: 30px; // Plus d'espace en bas
+    font-weight: 300; // Titre léger
+    font-size: 2.8em; // Plus grand
+    color: $text-color;
+    letter-spacing: -0.5px;
+}
+
+
+// Styles du conteneur de la liste
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); // Taille min un peu plus grande
+  gap: 35px; // Encore plus d'espace
+  padding: 0px 20px 40px 20px; // Pas de padding top (géré par h2), plus bas, espace latéral
+  max-width: 1300px; // Limite max de la grille
+  margin: 0 auto; // Centrer la grille
+}
+
+// Styles de chaque carte de livre
+.book-item {
+  background-color: $card-bg;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid $light-grey;
+
+  &:hover {
+    transform: translateY(-6px); // Soulèvement plus prononcé
+    box-shadow: $card-hover-shadow;
+  }
+
+  // Style pour l'emplacement de l'image
+  .book-cover {
+    display: block;
+    width: 75%;
+    max-width: 180px;
+    height: 250px;
+    margin: 0 auto 25px auto; // Espace en bas augmenté
+    background-color: $light-grey;
+    border-radius: 4px;
+    color: $secondary-color;
+    text-align: center;
+    font-style: italic;
+    font-size: 0.9em;
+    display: flex; // Pour centrer le texte alt verticalement
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Titre du livre
+  h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.3em; // Plus grand
+    font-weight: 600;
+    color: $text-color;
+    line-height: 1.35;
+    min-height: 2.7em; // ~2 lignes
+  }
+
+  // Auteur
+  .book-author {
+    font-size: 0.95em; // Un peu plus grand
+    color: $secondary-color;
+    margin-bottom: 15px;
+  }
+
+  // Résumé
+  .book-summary {
+    flex-grow: 1; // Important pour pousser le reste vers le bas
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.6; // Meilleur interlignage
+    margin-bottom: 20px;
+  }
+
+  // Prix
+  .book-price {
+    font-size: 1.4em; // Plus grand
+    font-weight: 700;
+    color: $primary-color;
+    text-align: right;
+    margin-bottom: 20px;
+  }
+
+  // === BOUTON ACHETER (Vérification/Amélioration) ===
+  button {
+    cursor: pointer; // <<< Assure le curseur main
+    padding: 12px 24px;
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    border-radius: math.div($border-radius, 2); // Division corrigée
+    font-weight: 600; // Plus gras
+    font-size: 0.9em; // Taille ajustée
+    text-transform: uppercase;
+    letter-spacing: 0.8px; // Plus d'espacement
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    align-self: flex-end; // Aligner à droite
+    margin-top: auto; // Important
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Ombre initiale
+
+    &:hover {
+      background-color: color.adjust($primary-color, $lightness: -10%); // Assombrir (corrigé)
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); // Ombre plus prononcée
+      transform: translateY(-2px); // Léger soulèvement
+    }
+
+    &:active {
+      transform: scale(0.97) translateY(0px); // Effet d'enfoncement (scale un peu plus)
+      background-color: color.adjust($primary-color, $lightness: -15%); // Assombrir plus (corrigé)
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); // Ombre réduite
+    }
+  }
+}
+
+
+// Message de chargement/pas de livres
+.loading-message, .no-books-message {
+  color: $secondary-color;
+  text-align: center;
+  padding: 50px 20px; // Plus d'espace
+  font-style: italic;
+  font-size: 1.1em; // Un peu plus grand
+}

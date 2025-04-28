@@ -1,0 +1,29 @@
+<!-- src/app/pages/home/home.component.html -->
+<h2>Nos Nouveautés</h2>
+
+<div *ngIf="books$ | async as books; else loading">
+
+  <div class="book-list" *ngIf="books.length > 0; else noBooks">
+    <div class="book-item" *ngFor="let book of books">
+      <!-- Image (même si cassée, elle utilise .book-cover) -->
+      <div class="book-cover">{{ 'Couverture de ' + book.title }}</div>
+      <!-- Reste des détails -->
+      <h3>{{ book.title }}</h3>
+      <p class="book-author">par {{ book.author }}</p>
+      <p class="book-summary">{{ book.summary | slice:0:120 }}...</p>
+      <p class="book-price">{{ book.price | currency:'EUR':'symbol':'1.2-2' }}</p>
+      <button (click)="buyBook(book)">Acheter maintenant</button>
+    </div>
+  </div>
+
+  <!-- Template si pas de livres -->
+  <ng-template #noBooks>
+    <p class="no-books-message">Aucun livre à afficher pour le moment.</p>
+  </ng-template>
+
+</div>
+
+<!-- Template de chargement -->
+<ng-template #loading>
+  <p class="loading-message">Chargement des livres...</p>
+</ng-template>
