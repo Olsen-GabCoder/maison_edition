@@ -1,80 +1,120 @@
 <!-- src/app/admin/components/book-form/book-form.component.html -->
-<!-- novalidate désactive la validation HTML5 -->
-<form [formGroup]="bookForm" (ngSubmit)="onSubmit()" novalidate class="book-form-container">
+<!-- Liaison du formulaire au FormGroup 'bookForm' -->
+<form [formGroup]="bookForm" (ngSubmit)="onSubmit()" novalidate>
 
-    <h3>{{ isEditMode ? 'Modifier le Livre' : 'Ajouter un Nouveau Livre' }}</h3>
-  
-    <!-- Champ Titre -->
-    <div class="form-group">
-      <label for="title">Titre</label>
-      <input type="text" id="title" formControlName="title" placeholder="Titre du livre">
-      <div *ngIf="(isSubmitted || formControls['title'].touched) && formControls['title'].errors?.['required']" class="error-message">
-        Le titre est obligatoire.
-      </div>
+  <!-- Affichage de l'erreur générale venant du parent -->
+  <div *ngIf="generalError" class="alert alert-danger general-form-error">
+    <strong>Erreur :</strong> {{ generalError }}
+  </div>
+
+  <!-- Champ Titre -->
+  <div class="form-group mb-3">
+    <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+    <input type="text" id="title" class="form-control" formControlName="title"
+           placeholder="Entrez le titre du livre"
+           [ngClass]="{ 'is-invalid': isInvalid('title') }">
+    <!-- Affichage conditionnel des erreurs pour 'title' -->
+    <div *ngIf="isInvalid('title')" class="invalid-feedback">
+      {{ getErrorMessage('title') }}
     </div>
-  
-    <!-- Champ Auteur -->
-    <div class="form-group">
-      <label for="author">Auteur</label>
-      <input type="text" id="author" formControlName="author" placeholder="Nom de l'auteur">
-      <div *ngIf="(isSubmitted || formControls['author'].touched) && formControls['author'].errors?.['required']" class="error-message">
-        L'auteur est obligatoire.
-      </div>
+  </div>
+
+  <!-- Champ Auteur -->
+  <div class="form-group mb-3">
+    <label for="author" class="form-label">Auteur <span class="text-danger">*</span></label>
+    <input type="text" id="author" class="form-control" formControlName="author"
+           placeholder="Nom de l'auteur"
+           [ngClass]="{ 'is-invalid': isInvalid('author') }">
+    <div *ngIf="isInvalid('author')" class="invalid-feedback">
+      {{ getErrorMessage('author') }}
     </div>
-  
-    <!-- Champ URL Couverture -->
-    <div class="form-group">
-      <label for="coverUrl">URL de la Couverture</label>
-      <input type="url" id="coverUrl" formControlName="coverUrl" placeholder="https://... ou assets/images/...">
-      <div *ngIf="(isSubmitted || formControls['coverUrl'].touched) && formControls['coverUrl'].errors?.['required']" class="error-message">
-        L'URL de la couverture est obligatoire.
-      </div>
-      <!-- On pourrait ajouter une validation de pattern URL plus tard -->
+  </div>
+
+  <!-- Champ ISBN -->
+  <div class="form-group mb-3">
+    <label for="isbn" class="form-label">ISBN</label>
+    <input type="text" id="isbn" class="form-control" formControlName="isbn"
+           placeholder="ISBN-10 ou ISBN-13 (ex: 9782070360536)"
+           [ngClass]="{ 'is-invalid': isInvalid('isbn') }">
+    <div *ngIf="isInvalid('isbn')" class="invalid-feedback">
+      {{ getErrorMessage('isbn') }}
     </div>
-  
-    <!-- Champ Catégorie -->
-    <div class="form-group">
-      <label for="category">Catégorie</label>
-      <input type="text" id="category" formControlName="category" placeholder="Ex: Fantasy, Science-Fiction...">
-      <div *ngIf="(isSubmitted || formControls['category'].touched) && formControls['category'].errors?.['required']" class="error-message">
-        La catégorie est obligatoire.
-      </div>
+  </div>
+
+  <!-- Champ Description -->
+  <div class="form-group mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea id="description" class="form-control" formControlName="description" rows="4"
+              placeholder="Brève description du livre"
+              [ngClass]="{ 'is-invalid': isInvalid('description') }"></textarea>
+    <div *ngIf="isInvalid('description')" class="invalid-feedback">
+      {{ getErrorMessage('description') }}
     </div>
-  
+  </div>
+
+  <!-- Ligne pour Prix et Stock -->
+  <div class="row mb-3">
     <!-- Champ Prix -->
-    <div class="form-group">
-      <label for="price">Prix (€)</label>
-      <!-- step="0.01" pour les navigateurs qui le supportent -->
-      <input type="number" id="price" formControlName="price" placeholder="Ex: 19.95" step="0.01">
-      <div *ngIf="(isSubmitted || formControls['price'].touched) && formControls['price'].errors?.['required']" class="error-message">
-        Le prix est obligatoire.
-      </div>
-       <div *ngIf="(isSubmitted || formControls['price'].touched) && formControls['price'].errors?.['min']" class="error-message">
-        Le prix doit être supérieur à 0.
+    <div class="col-md-6 form-group">
+      <label for="price" class="form-label">Prix (€) <span class="text-danger">*</span></label>
+      <input type="number" id="price" class="form-control" formControlName="price"
+             placeholder="0.00" step="0.01" min="0"
+             [ngClass]="{ 'is-invalid': isInvalid('price') }">
+      <div *ngIf="isInvalid('price')" class="invalid-feedback">
+        {{ getErrorMessage('price') }}
       </div>
     </div>
-  
-    <!-- Champ Résumé -->
-    <div class="form-group">
-      <label for="summary">Résumé</label>
-      <textarea id="summary" formControlName="summary" rows="5" placeholder="Bref résumé du livre (20 caractères min)"></textarea>
-      <div *ngIf="(isSubmitted || formControls['summary'].touched) && formControls['summary'].errors?.['required']" class="error-message">
-        Le résumé est obligatoire.
-      </div>
-       <div *ngIf="(isSubmitted || formControls['summary'].touched) && formControls['summary'].errors?.['minlength']" class="error-message">
-        Le résumé doit faire au moins 20 caractères.
+
+    <!-- Champ Stock -->
+    <div class="col-md-6 form-group">
+      <label for="stock" class="form-label">Stock</label>
+      <input type="number" id="stock" class="form-control" formControlName="stock"
+             placeholder="Quantité disponible" min="0" step="1"
+             [ngClass]="{ 'is-invalid': isInvalid('stock') }">
+      <div *ngIf="isInvalid('stock')" class="invalid-feedback">
+        {{ getErrorMessage('stock') }}
       </div>
     </div>
-  
-    <!-- Actions du formulaire -->
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="bookForm.invalid && isSubmitted">
-        {{ isEditMode ? 'Enregistrer les modifications' : 'Ajouter le livre' }}
-      </button>
-      <!-- Le bouton Annuler appelle la méthode onCancel() -->
-      <button type="button" class="btn btn-secondary" (click)="onCancel()">
-        Annuler
-      </button>
-    </div>
-  
-  </form>
+  </div>
+
+  <!-- Ligne pour Date de publication et Catégorie -->
+   <div class="row mb-3">
+     <!-- Champ Date de publication -->
+     <div class="col-md-6 form-group">
+       <label for="publishedDate" class="form-label">Date de publication</label>
+       <input type="date" id="publishedDate" class="form-control"
+              formControlName="publishedDate"
+              [ngClass]="{ 'is-invalid': isInvalid('publishedDate') }">
+       <div *ngIf="isInvalid('publishedDate')" class="invalid-feedback">
+         {{ getErrorMessage('publishedDate') }}
+       </div>
+     </div>
+
+     <!-- Champ Catégorie -->
+     <div class="col-md-6 form-group">
+       <label for="category" class="form-label">Catégorie</label>
+       <input type="text" id="category" class="form-control" formControlName="category"
+              placeholder="Ex: Fantasy, Science-Fiction"
+              [ngClass]="{ 'is-invalid': isInvalid('category') }">
+       <div *ngIf="isInvalid('category')" class="invalid-feedback">
+         {{ getErrorMessage('category') }}
+       </div>
+     </div>
+   </div>
+
+
+  <!-- Boutons d'action -->
+  <div class="form-actions d-flex justify-content-end gap-2 mt-4">
+    <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">
+      Annuler
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || bookForm.invalid">
+      <span *ngIf="!isSubmitting">{{ isEditMode ? 'Mettre à jour' : 'Ajouter le livre' }}</span>
+      <span *ngIf="isSubmitting">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Enregistrement...
+      </span>
+    </button>
+  </div>
+
+</form>

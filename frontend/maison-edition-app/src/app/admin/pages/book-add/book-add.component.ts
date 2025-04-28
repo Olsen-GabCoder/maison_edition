@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { BookFormComponent } from '../../components/book-form/book-form.component';
 import { BookService } from '../../../core/services/book.service';
 import { Book } from '../../../models/book.model';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-book-add',
   standalone: true,
-  imports: [ CommonModule, BookFormComponent ],
+  imports: [ CommonModule, BookFormComponent, ReactiveFormsModule  ],
   templateUrl: './book-add.component.html',
   styleUrls: ['./book-add.component.scss']
 })
@@ -20,11 +21,28 @@ export class BookAddComponent {
 
   pageTitle = "Ajouter un Nouveau Livre";
 
-  handleBookAdd(bookData: Omit<Book, 'id'>): void {
+  handleBookAdd(bookData: any): void { // Type 'any' pour correspondre à l'emit
     console.log('[BookAddComponent] Réception des données du formulaire:', bookData);
 
+    // Vérifier si les propriétés requises existent dans bookData
+    if (!bookData.title || !bookData.author || !bookData.coverUrl || !bookData.summary || bookData.price === null || bookData.price === undefined || !bookData.category) {
+      console.error('[BookAddComponent] Données de formulaire incomplètes:', bookData);
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    // Créer un objet Omit<Book, 'id'> explicitement
+    const newBookData: Omit<Book, 'id'> = {
+      title: bookData.title,
+      author: bookData.author,
+      coverUrl: bookData.coverUrl,
+      summary: bookData.summary,
+      price: bookData.price,
+      category: bookData.category
+    };
+
     // >>> APPEL RÉEL AU SERVICE <<<
-    this.bookService.addBook(bookData).subscribe({
+    this.bookService.addBook(newBookData).subscribe({
       next: (newBook) => {
         console.log('[BookAddComponent] Livre ajouté avec succès via le service:', newBook);
         alert(`Le livre "${newBook.title}" (ID: ${newBook.id}) a été ajouté.`);
@@ -37,10 +55,6 @@ export class BookAddComponent {
         // Rester sur le formulaire en cas d'erreur
       }
     });
-
-    // --- La simulation est maintenant supprimée ---
-    // alert(`Simulation : Ajout du livre "${bookData.title}" demandé...`);
-    // this.router.navigate(['/admin/books']);
   }
 
   handleCancel(): void {

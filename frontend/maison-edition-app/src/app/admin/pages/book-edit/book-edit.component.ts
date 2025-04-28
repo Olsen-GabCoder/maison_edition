@@ -6,13 +6,15 @@ import { Observable, switchMap, of, tap } from 'rxjs'; // switchMap pour enchaî
 import { BookFormComponent } from '../../components/book-form/book-form.component'; // Notre formulaire réutilisable
 import { BookService } from '../../../core/services/book.service';
 import { Book } from '../../../models/book.model';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-book-edit',
   standalone: true,
   imports: [
     CommonModule,
-    BookFormComponent // Utiliser le composant formulaire
+    BookFormComponent,
+    ReactiveFormsModule   // Utiliser le composant formulaire
   ],
   templateUrl: './book-edit.component.html',
   styleUrls: ['./book-edit.component.scss']
@@ -50,11 +52,11 @@ export class BookEditComponent implements OnInit {
       }),
       tap(book => { // Log après avoir récupéré le livre
         if (!book) {
-           console.error(`[BookEditComponent] Livre avec ID ${this.bookId} non trouvé par le service.`);
-           this.pageTitle = `Erreur: Livre ID ${this.bookId} non trouvé`;
+          console.error(`[BookEditComponent] Livre avec ID ${this.bookId} non trouvé par le service.`);
+          this.pageTitle = `Erreur: Livre ID ${this.bookId} non trouvé`;
         } else {
-           console.log('[BookEditComponent] Données initiales pour le formulaire:', book);
-           this.pageTitle = `Modifier : ${book.title}`; // Mettre à jour le titre avec celui du livre
+          console.log('[BookEditComponent] Données initiales pour le formulaire:', book);
+          this.pageTitle = `Modifier : ${book.title}`; // Mettre à jour le titre avec celui du livre
         }
       })
     );
@@ -65,7 +67,7 @@ export class BookEditComponent implements OnInit {
    * Appelle la méthode updateBook du service.
    * @param bookData Les données mises à jour du formulaire (devraient inclure l'ID ici).
    */
-  handleBookUpdate(bookData: Omit<Book, 'id'>): void {
+  handleBookUpdate(bookData: any): void { // Type 'any' pour correspondre à l'emit
     // Vérifier si on a bien l'ID stocké
     if (this.bookId === null) {
       console.error('[BookEditComponent] Tentative de mise à jour sans ID valide.');
@@ -73,10 +75,22 @@ export class BookEditComponent implements OnInit {
       return;
     }
 
+    // Vérifier si les propriétés requises existent dans bookData
+    if (!bookData.title || !bookData.author || !bookData.coverUrl || !bookData.summary || bookData.price === null || bookData.price === undefined || !bookData.category) {
+      console.error('[BookEditComponent] Données de formulaire incomplètes:', bookData);
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
     // Construire l'objet Book complet avec l'ID
     const bookToUpdate: Book = {
-      ...bookData,
-      id: this.bookId
+      id: this.bookId,
+      title: bookData.title,
+      author: bookData.author,
+      coverUrl: bookData.coverUrl,
+      summary: bookData.summary,
+      price: bookData.price,
+      category: bookData.category
     };
 
     console.log('[BookEditComponent] Demande de mise à jour pour ID:', this.bookId, 'avec données:', bookToUpdate);
