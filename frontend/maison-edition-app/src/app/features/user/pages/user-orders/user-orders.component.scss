@@ -1,0 +1,289 @@
+/* src/app/features/user/pages/user-orders/user-orders.component.scss */
+
+/* Variables locales (puisqu'on n'importe pas) */
+$font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$background-general: #f8f9fa;
+$text-color: #333;
+$title-color: #2c3e50; // Bleu ardoise foncé
+$primary-color: #28a745; // Vert vif
+$primary-hover-color: #218838; // Vert foncé
+$secondary-color: #6c757d; // Gris
+$secondary-hover-color: #5a6268; // Gris foncé
+$white-color: #fff;
+$border-color-light: #dee2e6;
+$border-color-medium: #ced4da;
+$box-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
+$box-shadow-hover: 0 5px 15px rgba(0, 0, 0, 0.12);
+$border-radius-base: 6px;
+
+/* Style global pour le composant */
+:host {
+  display: block; // Assure que le composant prend de la place
+  font-family: $font-family-base;
+  background-color: $background-general;
+  color: $text-color;
+}
+
+/* Conteneur principal */
+.user-orders-container {
+  padding: 20px;
+  max-width: 1100px; /* Un peu plus large pour la grille */
+  margin: 30px auto; /* Plus de marge verticale */
+  border-radius: $border-radius-base;
+  // Ombre et fond déplacés à :host ou body si appliqué globalement
+}
+
+/* En-tête spécifique avec gradient */
+.page-header {
+  background: linear-gradient(90deg, #3498db 0%, $title-color 100%); // Gradient demandé
+  color: $white-color; // Texte blanc
+  text-align: center; // Texte centré
+  padding: 25px 20px; // Plus de padding vertical
+  margin-bottom: 30px; // Plus d'espace en dessous
+  border-radius: $border-radius-base $border-radius-base 0 0; // Coins arrondis en haut
+
+  h2 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.8em;
+    // La couleur est héritée du parent (.page-header)
+  }
+}
+
+/* Grille responsive pour les commandes */
+.order-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // Grille demandée
+  gap: 25px; // Espacement (gap) demandé
+  padding: 0; // Pas de padding sur la liste elle-même
+  margin: 0; // Pas de marge
+  list-style: none;
+}
+
+/* Style pour chaque carte de commande */
+.order-item {
+  background-color: $white-color;
+  border: 1px solid $border-color-light;
+  border-radius: $border-radius-base;
+  box-shadow: $box-shadow-soft; // Ombre douce
+  overflow: hidden; // Pour les coins arrondis internes si nécessaire
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  display: flex;
+  flex-direction: column; // Pour que le footer aille en bas
+  padding: 0; // Padding géré par les sections internes
+
+  &:hover {
+    transform: translateY(-4px); // Léger soulèvement
+    box-shadow: $box-shadow-hover; // Ombre plus prononcée
+  }
+}
+
+/* En-tête dans la carte */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: lighten($background-general, 2%); // Très léger gris
+  border-bottom: 1px solid $border-color-light;
+
+  .order-number {
+    font-weight: bold;
+    color: $title-color; // Utiliser la couleur titre pour le numéro
+    font-size: 1.05em;
+  }
+
+  .order-date {
+    font-size: 0.85em;
+    color: $secondary-color; // Gris pour la date
+  }
+}
+
+/* Section des détails principaux */
+.order-details {
+  padding: 15px 20px;
+  flex-grow: 1; // Permet à cette section de grandir
+
+  p {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: $text-color; // Couleur texte standard
+
+    strong {
+      color: darken($text-color, 15%); // Libellés un peu plus foncés
+      margin-right: 5px;
+    }
+  }
+}
+
+/* Section des articles (si affichée) */
+.order-items-section {
+  padding: 15px 20px;
+  border-top: 1px dashed $border-color-medium; // Séparateur pointillé
+
+  h4 {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: $title-color;
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-transform: uppercase; // Majuscules pour le titre de section
+    letter-spacing: 0.5px;
+  }
+
+  .items-list { /* Style pour la liste ul/ol */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .item-detail { /* Style pour chaque li */
+    font-size: 0.9em;
+    color: $secondary-color;
+    margin-bottom: 5px;
+    padding-left: 15px;
+    position: relative; // Pour le pseudo-élément
+
+    &::before { // Petit cercle décoratif avant chaque item
+      content: '•';
+      color: $primary-color; // Utiliser la couleur primaire
+      position: absolute;
+      left: 0;
+      top: 1px;
+    }
+  }
+}
+
+/* Pied de page de la carte */
+.order-footer {
+  padding: 15px 20px;
+  background-color: lighten($background-general, 2%);
+  border-top: 1px solid $border-color-light;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .order-total {
+    font-weight: bold;
+    font-size: 1.15em;
+    color: $primary-color; // Couleur primaire pour le total
+  }
+
+  .order-status {
+    font-size: 0.85em;
+    font-weight: 600; // Gras pour le statut
+    padding: 5px 10px;
+    border-radius: 15px; // Badge arrondi
+    color: $white-color;
+    text-transform: uppercase; // Majuscules
+    letter-spacing: 0.5px;
+
+    // Couleurs spécifiques pour chaque statut
+    &.status-pending    { background-color: #ffc107; color: $text-color; }
+    &.status-processing { background-color: #0dcaf0; color: $text-color; }
+    &.status-shipped    { background-color: #0d6efd; }
+    &.status-delivered  { background-color: $primary-color; } // Utiliser le vert primaire
+    &.status-cancelled  { background-color: #dc3545; }
+    &.status-unknown    { background-color: $secondary-color; } // Utiliser le gris secondaire
+  }
+}
+
+/* Message si pas de commandes */
+.no-orders-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: $secondary-color;
+  background-color: $white-color;
+  border: 1px dashed $border-color-medium;
+  border-radius: $border-radius-base;
+  margin: 20px 0; // Ajouter une marge si hors grille
+}
+
+/* Indicateur de chargement */
+.loading-indicator {
+  text-align: center;
+  padding: 40px 20px;
+  color: $secondary-color;
+  font-size: 1.1em;
+}
+
+/* Boutons (si vous en ajoutez, ex: Voir Détails) */
+.btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
+  color: $text-color; // Couleur de texte par défaut pour les boutons
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: .375rem .75rem; // Padding standard
+  font-size: 1rem;
+  border-radius: $border-radius-base;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.btn-primary {
+  color: $white-color;
+  background-color: $primary-color;
+  border-color: $primary-color;
+
+  &:hover {
+    color: $white-color;
+    background-color: $primary-hover-color;
+    border-color: darken($primary-hover-color, 5%);
+  }
+}
+
+.btn-secondary {
+  color: $white-color;
+  background-color: $secondary-color;
+  border-color: $secondary-color;
+
+  &:hover {
+    color: $white-color;
+    background-color: $secondary-hover-color;
+    border-color: darken($secondary-hover-color, 5%);
+  }
+}
+
+
+/* Design adapté au mobile */
+@media (max-width: 480px) {
+  .user-orders-container {
+    margin: 15px; // Réduire marges
+    padding: 15px; // Réduire padding
+  }
+
+  .page-header {
+     padding: 20px 15px;
+     h2 { font-size: 1.5em; }
+  }
+
+  .order-list {
+    grid-template-columns: 1fr; // Mise en page en une seule colonne
+    gap: 15px; // Réduire l'espacement
+  }
+
+  .order-header, .order-footer {
+    flex-direction: column; // Empiler header et footer
+    align-items: flex-start; // Aligner à gauche
+    gap: 5px;
+  }
+
+   .order-details {
+     grid-template-columns: 1fr; // Détails sur une colonne aussi
+     gap: 5px;
+     p { margin-bottom: 5px; }
+  }
+
+  .order-footer .order-total,
+  .order-footer .order-status {
+    width: 100%; // Prendre toute la largeur
+    text-align: center; // Centrer total et statut
+  }
+   .order-footer .order-status { margin-top: 5px; } // Espace entre total et statut
+}

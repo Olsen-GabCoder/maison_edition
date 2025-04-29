@@ -4,6 +4,8 @@ import { provideRouter, withDebugTracing } from '@angular/router'; // withDebugT
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
+
+
 // === Vérifier cet import et le nom 'routes' ===
 import { routes } from './app.routes';
 

@@ -1,29 +1,63 @@
 <!-- src/app/pages/home/home.component.html -->
-<h2>Nos Nouveautés</h2>
+<!-- Section d'accueil (optionnelle, si vous en avez une) -->
+<section class="hero-section">
+  <!-- ... Contenu Hero ... -->
+  <h1>Bienvenue chez EditApp</h1>
+  <p>Votre source de lecture...</p>
+</section>
 
-<div *ngIf="books$ | async as books; else loading">
+<!-- Section des livres -->
+<section class="featured-books">
+  <h2>Nos Nouveautés</h2> <!-- Ou juste "Nos Livres" -->
 
-  <div class="book-list" *ngIf="books.length > 0; else noBooks">
-    <div class="book-item" *ngFor="let book of books">
-      <!-- Image (même si cassée, elle utilise .book-cover) -->
-      <div class="book-cover">{{ 'Couverture de ' + book.title }}</div>
-      <!-- Reste des détails -->
-      <h3>{{ book.title }}</h3>
-      <p class="book-author">par {{ book.author }}</p>
-      <p class="book-summary">{{ book.summary | slice:0:120 }}...</p>
-      <p class="book-price">{{ book.price | currency:'EUR':'symbol':'1.2-2' }}</p>
-      <button (click)="buyBook(book)">Acheter maintenant</button>
-    </div>
+  <!-- Afficher le message d'erreur s'il y en a un -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
   </div>
 
-  <!-- Template si pas de livres -->
-  <ng-template #noBooks>
-    <p class="no-books-message">Aucun livre à afficher pour le moment.</p>
+  <!-- Utiliser l'observable books$ avec async pipe -->
+  <div *ngIf="(books$ | async) as books; else loadingOrError">
+
+    <!-- Afficher la grille de livres si le tableau n'est pas vide -->
+    <!-- VOICI VOTRE STRUCTURE DE LISTE ORIGINALE -->
+    <div class="book-list" *ngIf="books.length > 0; else noBooks">
+        <div class="book-item" *ngFor="let book of books">
+          <!-- Votre structure de couverture -->
+          <div class="book-cover">{{ 'Couverture de ' + book.title }}</div>
+          <h3>{{ book.title }}</h3>
+          <p class="book-author">par {{ book.author }}</p>
+          <!-- === CORRECTION ICI: Retour à book.summary === -->
+          <p class="book-summary">{{ book.summary | slice:0:120 }}<span *ngIf="book.summary.length > 120">...</span></p>
+          <!-- === FIN CORRECTION === -->
+          <p class="book-price">{{ book.price | currency:'EUR':'symbol':'1.2-2' }}</p>
+          <!-- Bouton Acheter maintenant corrigé précédemment (utilise routerLink) -->
+          <a [routerLink]="['/order/new', book.id]" class="btn btn-primary btn-sm">
+            Acheter maintenant
+          </a>
+          <!-- Bouton Voir Détail corrigé précédemment (utilise routerLink) -->
+          <a [routerLink]="['/books', book.id]" class="btn btn-secondary btn-sm view-detail-button">
+            Voir Détail
+          </a>
+        </div>
+      </div>
+    <!-- FIN DE VOTRE STRUCTURE DE LISTE ORIGINALE -->
+
+    <!-- Template si la liste de livres est vide après chargement -->
+    <ng-template #noBooks>
+      <p class="no-books-message alert alert-info">Aucun livre à afficher pour le moment.</p>
+    </ng-template>
+
+  </div>
+
+  <!-- Template pendant le chargement ou si erreur de chargement -->
+  <ng-template #loadingOrError>
+    <!-- Afficher si isLoading est true -->
+    <div *ngIf="isLoading" class="loading-indicator">
+        <p class="loading-message">Chargement des livres...</p>
+        <!-- Spinner possible ici -->
+    </div>
+     <!-- Le message d'erreur est géré plus haut -->
   </ng-template>
+</section>
 
-</div>
-
-<!-- Template de chargement -->
-<ng-template #loading>
-  <p class="loading-message">Chargement des livres...</p>
-</ng-template>
+<!-- Autres sections de la page d'accueil -->

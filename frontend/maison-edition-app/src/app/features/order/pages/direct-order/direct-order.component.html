@@ -1,0 +1,131 @@
+<!-- src/app/features/order/pages/direct-order/direct-order.component.html -->
+<div class="order-page-container">
+
+  <!-- === MODIFICATION : Ajout du conteneur pour l'en-tête === -->
+  <div class="order-page-header">
+    <h2>Passer une commande directe</h2>
+  </div>
+  <!-- === FIN MODIFICATION === -->
+
+  <!-- Indicateur de chargement initial -->
+  <div *ngIf="isLoadingBook" class="loading-indicator">
+    Chargement des détails du livre...
+  </div>
+
+  <!-- Contenu principal affiché après chargement -->
+  <!-- Utilisation de ng-container pour éviter un div inutile -->
+  <ng-container *ngIf="!isLoadingBook">
+
+    <!-- Cas d'erreur majeure empêchant l'affichage du formulaire -->
+    <div *ngIf="errorMessage && !selectedBookData" class="alert alert-warning order-page-content"> <!-- Ajout padding si besoin -->
+      <p>{{ errorMessage }}</p>
+      <a routerLink="/" class="btn btn-secondary btn-sm">Retour à l'accueil</a>
+    </div>
+
+    <!-- Affichage du formulaire et du résumé si le livre est chargé -->
+    <!-- Utilisation de ng-container ici aussi -->
+    <ng-container *ngIf="selectedBookData">
+      <!-- Ajouter une classe pour le padding général du contenu si nécessaire -->
+      <div class="order-page-content">
+
+        <!-- Résumé du livre commandé -->
+        <h3>Article commandé</h3>
+        <div class="ordered-item-summary">
+          <p><strong>Titre :</strong> {{ selectedBookData.title }}</p>
+          <p><strong>Auteur :</strong> {{ selectedBookData.author }}</p>
+          <p><strong>Prix :</strong> {{ selectedBookData.price | currency:'EUR':'symbol' }}</p>
+          <p><strong>Quantité :</strong> 1</p>
+        </div>
+        <hr>
+
+        <!-- Formulaire de commande -->
+        <h3>Vos informations</h3>
+        <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+
+          <!-- Section Informations Client -->
+          <fieldset>
+            <legend>Informations Client</legend>
+            <div class="form-group">
+              <label for="customerName">Nom complet <span class="required">*</span></label>
+              <input type="text" id="customerName" formControlName="customerName" placeholder="Votre nom et prénom" class="form-control" [class.is-invalid]="customerName?.invalid && (customerName?.dirty || customerName?.touched)">
+              <div *ngIf="customerName?.invalid && (customerName?.dirty || customerName?.touched)" class="invalid-feedback">
+                <small *ngIf="customerName?.errors?.['required']">Le nom est requis.</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="customerEmail">Email <span class="required">*</span></label>
+              <input type="email" id="customerEmail" formControlName="customerEmail" placeholder="votre.email@example.com" class="form-control" [class.is-invalid]="customerEmail?.invalid && (customerEmail?.dirty || customerEmail?.touched)">
+              <div *ngIf="customerEmail?.invalid && (customerEmail?.dirty || customerEmail?.touched)" class="invalid-feedback">
+                <small *ngIf="customerEmail?.errors?.['required']">L'email est requis.</small>
+                <small *ngIf="customerEmail?.errors?.['email']">Format d'email invalide.</small>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="customerId">ID Client (Optionnel)</label>
+              <input type="text" id="customerId" formControlName="customerId" placeholder="Si vous êtes déjà client" class="form-control">
+            </div>
+          </fieldset>
+
+          <!-- Section Adresse de Livraison -->
+          <fieldset formGroupName="shippingAddress">
+            <legend>Adresse de Livraison</legend>
+             <div class="form-group">
+              <label for="street">Rue <span class="required">*</span></label>
+              <input type="text" id="street" formControlName="street" placeholder="Numéro et nom de rue" class="form-control" [class.is-invalid]="street?.invalid && (street?.dirty || street?.touched)">
+              <div *ngIf="street?.invalid && (street?.dirty || street?.touched)" class="invalid-feedback">
+                <small *ngIf="street?.errors?.['required']">L'adresse est requise.</small>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group half-width">
+                <label for="zipCode">Code Postal <span class="required">*</span></label>
+                <input type="text" id="zipCode" formControlName="zipCode" placeholder="Ex: 75001" class="form-control" [class.is-invalid]="zipCode?.invalid && (zipCode?.dirty || zipCode?.touched)">
+                <div *ngIf="zipCode?.invalid && (zipCode?.dirty || zipCode?.touched)" class="invalid-feedback">
+                  <small *ngIf="zipCode?.errors?.['required']">Code postal requis.</small>
+                </div>
+              </div>
+              <div class="form-group half-width">
+                <label for="city">Ville <span class="required">*</span></label>
+                <input type="text" id="city" formControlName="city" placeholder="Ex: Paris" class="form-control" [class.is-invalid]="city?.invalid && (city?.dirty || city?.touched)">
+                <div *ngIf="city?.invalid && (city?.dirty || city?.touched)" class="invalid-feedback">
+                  <small *ngIf="city?.errors?.['required']">Ville requise.</small>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="country">Pays <span class="required">*</span></label>
+              <input type="text" id="country" formControlName="country" placeholder="Ex: France" class="form-control" [class.is-invalid]="country?.invalid && (country?.dirty || country?.touched)">
+               <div *ngIf="country?.invalid && (country?.dirty || country?.touched)" class="invalid-feedback">
+                 <small *ngIf="country?.errors?.['required']">Pays requis.</small>
+               </div>
+            </div>
+          </fieldset>
+
+          <!-- Affichage Erreur de SOUMISSION (pas les erreurs de validation) -->
+          <div *ngIf="errorMessage && !isSubmitting" class="alert alert-danger mt-3">
+            {{ errorMessage }}
+          </div>
+          <!-- Le message de succès est géré par le NotificationService -->
+
+          <!-- Boutons d'action -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="orderForm.invalid || isSubmitting || isLoadingBook || !selectedBookData">
+              <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              {{ isSubmitting ? ' Enregistrement...' : 'Valider et Commander (' + (selectedBookData.price | currency:'EUR':'symbol') + ')' }}
+            </button>
+            <a routerLink="/" class="btn btn-secondary">Annuler</a>
+          </div>
+
+        </form> <!-- Fin Formulaire -->
+      </div> <!-- Fin .order-page-content -->
+
+    </ng-container> <!-- Fin *ngIf selectedBookData -->
+
+    <!-- Afficher si pas d'erreur, mais pas de données livre -->
+    <div *ngIf="!errorMessage && !selectedBookData">
+        <!-- Vide par défaut, car l'erreur est gérée plus haut -->
+    </div>
+
+  </ng-container> <!-- Fin *ngIf !isLoadingBook -->
+
+</div> <!-- Fin .order-page-container -->

@@ -1,0 +1,87 @@
+<!-- src/app/features/user/pages/user-orders/user-orders.component.html -->
+<div class="user-orders-container">
+
+    <!-- Utilisation de la classe d'en-tête stylisée -->
+    <div class="page-header">
+      <h2>Mes Commandes</h2>
+    </div>
+  
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" class="loading-indicator">
+      Chargement de votre historique de commandes...
+    </div>
+  
+    <!-- Affichage d'erreur -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+  
+    <!-- Conteneur principal si pas de chargement et pas d'erreur -->
+    <div *ngIf="!isLoading && !errorMessage">
+      <!-- Abonnement à l'observable des commandes utilisateur -->
+      <div *ngIf="(userOrders$ | async) as orders; else noOrdersYet">
+        <!-- Vérifier s'il y a des commandes -->
+        <div *ngIf="orders.length > 0; else noOrdersYet">
+  
+          <p style="text-align: center; margin-bottom: 20px; color: #6c757d;">
+              Voici la liste des commandes que vous avez passées (enregistrées dans ce navigateur).
+          </p>
+  
+          <!-- Utilisation de la liste en grille avec les classes SCSS -->
+          <div class="order-list">
+            <!-- Boucle sur chaque commande pour créer une carte -->
+            <div class="order-item" *ngFor="let order of orders">
+  
+              <!-- En-tête de la carte -->
+              <div class="order-header">
+                <span class="order-number" title="Numéro de Commande">{{ order.orderNumber }}</span>
+                <span class="order-date" title="Date de la commande">{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+  
+              <!-- Détails principaux dans la carte -->
+              <div class="order-details">
+                <!-- Vous pouvez ajouter d'autres détails ici si nécessaire -->
+                <p><strong>Client :</strong> {{ order.customerName }}</p>
+                <p><strong>Email :</strong> {{ order.customerEmail }}</p>
+                <!-- Afficher les articles si besoin (simplifié ici) -->
+                 <p *ngIf="order.items && order.items.length > 0">
+                     <strong>Article(s):</strong>
+                     <span *ngFor="let item of order.items; let last = last">
+                         {{ item.title }} ({{ item.quantity }}){{ last ? '' : ', ' }}
+                     </span>
+                 </p>
+              </div>
+  
+              <!-- Pied de page de la carte -->
+              <div class="order-footer">
+                <span class="order-total" title="Montant Total">{{ order.totalAmount | currency:'EUR':'symbol' }}</span>
+                <!-- Application dynamique de la classe de statut -->
+                <span title="Statut de la commande" [class]="'order-status ' + getStatusBadgeClass(order.status)">
+                  <!-- Affichage du statut traduit -->
+                  {{ statusTranslations[order.status] || order.status }}
+                </span>
+              </div>
+  
+               <!-- Optionnel: Ajouter un bouton/lien détails ici si besoin -->
+               <!--
+               <div class="card-actions-footer" style="padding: 10px 20px; text-align: right;">
+                  <a [routerLink]="['/chemin/vers/details', order.id]" class="btn btn-secondary btn-sm">Voir Détails</a>
+               </div>
+               -->
+  
+            </div> <!-- Fin .order-item -->
+          </div> <!-- Fin .order-list -->
+  
+        </div> <!-- Fin *ngIf orders.length > 0 -->
+      </div> <!-- Fin *ngIf userOrders$ | async -->
+  
+      <!-- Template si aucune commande n'est trouvée -->
+      <ng-template #noOrdersYet>
+        <!-- Utilisation de la classe SCSS pour ce message -->
+        <p class="no-orders-message">
+          Vous n'avez pas encore passé de commande depuis ce navigateur.
+        </p>
+      </ng-template>
+  
+    </div> <!-- Fin *ngIf !isLoading && !errorMessage -->
+  </div> <!-- Fin .user-orders-container -->

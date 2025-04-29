@@ -1,0 +1,93 @@
+// src/app/pages/book-detail/book-detail.component.scss
+// @import '../../../styles/variables'; // <-- Commenté car non trouvé ou obsolète
+
+.book-detail-container {
+    padding-top: 20px;
+    padding-bottom: 40px;
+  }
+  
+  .loading-indicator {
+    color: #6c757d; // Couleur gris par défaut (remplace $gray-600)
+  }
+  
+  .book-cover { // Style pour l'image de couverture (coverUrl)
+    max-height: 400px;
+    max-width: 100%; // Assure que l'image ne dépasse pas son conteneur
+    height: auto; // Maintient le ratio
+    object-fit: contain; // Ajuste l'image sans la déformer
+    border: 1px solid #dee2e6; // Bordure grise légère (remplace $gray-300)
+    border-radius: .25rem; // Coins arrondis (remplace $border-radius)
+    background-color: #f8f9fa; // Fond léger (remplace $gray-100)
+    padding: 5px; // Petit padding autour de l'image
+    display: block; // Pour centrer avec margin: auto si nécessaire
+    margin: 0 auto 1rem auto; // Centrer horizontalement et marge en bas
+  }
+  
+  .book-title {
+    font-weight: 600;
+    color: inherit; // Utilise la couleur par défaut des titres (remplace $headings-color)
+    text-align: center; // Centrer le titre
+  }
+  
+  .book-author {
+    color: #495057; // Gris plus foncé (remplace $gray-700)
+    text-align: center; // Centrer l'auteur
+    margin-bottom: 1rem;
+    strong {
+      color: #212529; // Noir léger (remplace $gray-800)
+    }
+  }
+  
+  .book-meta {
+    font-size: 0.9em;
+    text-align: center; // Centrer les métadonnées
+    margin-bottom: 1.5rem;
+  
+    .badge { // Style Bootstrap pour badge
+      font-size: 0.85em;
+      padding: .4em .7em;
+      vertical-align: middle; // Mieux aligner
+    }
+    // La date de publication n'est plus affichée
+  }
+  
+  .book-summary { // Renommé depuis book-description
+    line-height: 1.7;
+    color: #343a40; // Gris foncé (remplace $gray-800)
+    text-align: justify; // Justifier le texte pour une meilleure lisibilité
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .book-purchase-info {
+    background-color: #f8f9fa; // Fond léger (remplace $gray-100)
+    padding: 15px 20px;
+    border-radius: .25rem; // Coins arrondis (remplace $border-radius-sm)
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; // Permet le retour à la ligne sur petits écrans
+    gap: 10px; // Espace entre prix et bouton
+  }
+  
+  .book-price {
+    font-weight: bold;
+    font-size: 1.5rem; // Prix plus visible
+    color: #0d6efd; // Bleu primaire Bootstrap (ou une autre couleur)
+  }
+  
+  // La section stock n'est plus affichée
+  // La section ISBN n'est plus affichée
+  
+  .book-actions {
+    margin-top: 25px;
+    text-align: center; // Centrer les boutons
+  
+    .btn {
+      padding: .5rem 1rem;
+      margin: 5px; // Espace autour des boutons
+    }
+    .fas {
+      vertical-align: -0.1em;
+    }
+  }

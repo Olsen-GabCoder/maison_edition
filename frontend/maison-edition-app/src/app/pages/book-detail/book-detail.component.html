@@ -1,0 +1,83 @@
+<!-- src/app/pages/book-detail/book-detail.component.html -->
+<div class="book-detail-container container mt-4">
+
+    <!-- Indicateur de chargement -->
+    <div *ngIf="isLoading" class="text-center loading-indicator py-5">
+      <p>Chargement des détails du livre...</p>
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  
+    <!-- Affichage de l'erreur -->
+    <div *ngIf="!isLoading && errorMessage" class="alert alert-danger text-center">
+      <i class="fas fa-exclamation-triangle me-2"></i> {{ errorMessage }}
+      <div class="mt-3">
+         <a routerLink="/" class="btn btn-primary">Retour à l'accueil</a>
+      </div>
+    </div>
+  
+    <!-- Affichage des détails du livre si trouvé et pas d'erreur -->
+    <div *ngIf="!isLoading && !errorMessage && (book$ | async) as book">
+      <div class="row justify-content-center"> <!-- Centrer le contenu -->
+  
+        <!-- Colonne pour l'image de couverture -->
+        <div class="col-md-6 col-lg-4 text-center mb-3">
+          <!-- Utilisation de book.coverUrl -->
+          <img [src]="book.coverUrl || 'assets/images/placeholder.png'"
+               [alt]="'Couverture de ' + book.title"
+               class="img-fluid book-cover">
+          <!-- Utiliser une image placeholder si coverUrl est vide -->
+        </div>
+  
+        <!-- Colonne pour les informations textuelles -->
+        <div class="col-md-10 col-lg-8"> <!-- Ajuster la largeur si nécessaire -->
+          <h1 class="book-title mb-2">{{ book.title }}</h1>
+          <p class="book-author lead mb-3">par <strong>{{ book.author }}</strong></p>
+  
+          <div class="book-meta mb-4">
+            <!-- Affichage de la catégorie si elle existe -->
+            <span class="badge bg-secondary me-2" *ngIf="book.category">{{ book.category }}</span>
+            <!-- La date de publication n'est plus affichée -->
+          </div>
+  
+          <hr>
+  
+          <!-- Utilisation de book.summary au lieu de book.description -->
+          <h5 class="mt-4">Résumé</h5>
+          <p class="book-summary mb-4" *ngIf="book.summary">{{ book.summary }}</p>
+          <p class="book-summary mb-4 fst-italic" *ngIf="!book.summary">Aucun résumé disponible.</p>
+  
+          <hr>
+  
+          <!-- Info Achat (Prix uniquement, pas de stock) -->
+          <div class="book-purchase-info d-flex justify-content-between align-items-center mb-4">
+            <span class="book-price h4 text-primary mb-0">{{ book.price | currency:'EUR':'symbol':'1.2-2':'fr' }}</span>
+            <!-- L'information de stock n'est plus affichée -->
+             <button class="btn btn-primary" (click)="$event.stopPropagation()" title="Fonctionnalité non implémentée">
+                 <i class="fas fa-shopping-cart me-1"></i> Ajouter au panier
+             </button>
+          </div>
+  
+          <!-- L'ISBN n'est plus affiché -->
+  
+          <!-- Bouton Retour -->
+          <div class="book-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="goBack()">
+               <i class="fas fa-arrow-left me-1"></i> Retour
+            </button>
+          </div>
+  
+        </div> <!-- Fin col info textuelles -->
+      </div> <!-- Fin row -->
+    </div> <!-- Fin *ngIf book -->
+  
+    <!-- Message si le livre est null mais sans erreur (sécurité) -->
+     <div *ngIf="!isLoading && !errorMessage && !(book$ | async)" class="alert alert-warning text-center">
+        Les informations du livre n'ont pas pu être affichées.
+        <div class="mt-3">
+           <a routerLink="/" class="btn btn-secondary">Retour à l'accueil</a>
+        </div>
+     </div>
+  
+  </div>

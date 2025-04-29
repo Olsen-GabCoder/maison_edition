@@ -2,28 +2,32 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-// Correction: Importer map, catchError, tap UNE SEULE FOIS depuis 'rxjs'
-import { Observable, of, switchMap, catchError, tap, map } from 'rxjs'; // Assurez-vous que map est bien ici
-import { OrderService } from '../../../core/services/order.service';
-import { Order, OrderStatus } from '../../../models/order.model'; // Vérifier chemin
+import { Observable, of, switchMap, catchError, tap, map } from 'rxjs';
+import { OrderService } from '../../../core/services/order.service'; // Vérifiez chemin
+import { Order, OrderStatus } from '../../../models/order.model';    // Vérifiez chemin
 
 @Component({
-  selector: 'app-order-detail',
+  selector: 'app-order-detail', // Garder le sélecteur correct
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink
-   ],
-  templateUrl: './order-detail.component.html',
-  styleUrls: ['./order-detail.component.scss']
+  imports: [CommonModule, RouterLink],
+  // === CORRECTION templateUrl et styleUrls ===
+  templateUrl: './order-detail.component.html', // Pointe vers son propre template
+  styleUrls: ['./order-detail.component.scss']   // Pointe vers ses propres styles
 })
-export class OrderDetailComponent implements OnInit {
+// === CORRECTION Nom de la classe ===
+export class OrderDetailComponent implements OnInit { // Nommé OrderDetailComponent
 
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
 
   order$: Observable<Order | undefined> = of(undefined);
   errorMessage: string | null = null;
+
+  // Objet de traduction (identique à OrderListComponent)
+  statusTranslations: { [key in OrderStatus]: string } = {
+    'Pending': 'En attente', 'Processing': 'En préparation', 'Shipped': 'Expédiée',
+    'Delivered': 'Livrée', 'Cancelled': 'Annulée'
+  };
 
   ngOnInit(): void {
     console.log('[OrderDetailComponent] ngOnInit: Initialisation.');
@@ -32,18 +36,19 @@ export class OrderDetailComponent implements OnInit {
 
   loadOrderDetails(): void {
     this.errorMessage = null;
+    console.log('[OrderDetailComponent] loadOrderDetails: Début chargement.');
     this.order$ = this.route.paramMap.pipe(
       map(params => params.get('id')),
       tap(orderId => console.log(`[OrderDetailComponent] ID récupéré de l'URL: ${orderId}`)),
       switchMap(orderId => {
         if (orderId) {
-          return this.orderService.getOrderById(orderId).pipe(
+          return this.orderService.getOrderById(orderId).pipe( // Utilise ID string
              tap(order => {
                 if (!order) {
                    console.warn(`[OrderDetailComponent] Commande non trouvée pour l'ID: ${orderId}`);
                    this.errorMessage = `Désolé, la commande avec l'ID "${orderId}" n'a pas été trouvée.`;
                 } else {
-                   console.log(`[OrderDetailComponent] Détails de la commande ${orderId} chargés.`);
+                   console.log(`[OrderDetailComponent] Détails de la commande ${orderId} chargés:`, order);
                 }
              }),
             catchError(error => {
@@ -61,15 +66,9 @@ export class OrderDetailComponent implements OnInit {
     );
   }
 
-  // Fonction pour générer la classe CSS du badge (alternative au pipe replace)
-  // Vous pouvez l'utiliser dans le template si besoin avec [ngClass] ou [class]
-  // Exemple d'utilisation dans le HTML (à la place de la version précédente):
-  // <span class="status-badge" [class]="getStatusBadgeClass(order.status)">
-  getStatusBadgeClass(status: OrderStatus): string {
-    // Remplace les espaces par des tirets et met en minuscule
+  // Fonction pour générer la classe CSS du badge
+  getStatusBadgeClass(status: OrderStatus | undefined): string {
+    if (!status) return 'status-unknown';
     return 'status-' + status.toLowerCase().replace(/ /g, '-');
   }
 }
-
-// LIGNE REDONDANTE SUPPRIMÉE CI-DESSOUS :
-// import { map, catchError, tap } from 'rxjs/operators'; // <<<=== SUPPRIMER CETTE LIGNE

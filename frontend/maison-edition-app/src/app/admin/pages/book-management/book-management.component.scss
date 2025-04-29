@@ -173,7 +173,7 @@ table {
       @include transition(background-color, 0.15s, ease);
       
       &:hover {
-        background-color: darken($light-grey, 5%);
+        background-color: color.scale($light-grey, $lightness: -5.1204819277%);
       }
       
       .sort-icon {
