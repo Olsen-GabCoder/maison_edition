@@ -50,6 +50,40 @@ $border-radius-base: 6px;
   }
 }
 
+/* ===> AJOUT N°1 : Styles pour la section des totaux <=== */
+.order-summary-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 20px; // Espace avant la liste/table ou le hr
+  // Utiliser les variables si définies, sinon les couleurs directes
+  background-color: #e9ecef; // Un gris différent du fond général
+  border: 1px solid #dee2e6; // Utiliser $border-color-light si défini
+  border-radius: 6px; // Utiliser $border-radius-base si défini
+  font-size: 1.05em;
+  color: #333; // Utiliser $text-color si défini
+
+  span {
+    margin: 5px 10px;
+
+    strong {
+      // Utiliser $title-color si défini
+      color: #2c3e50;
+      margin-left: 8px;
+      font-weight: 600;
+    }
+  }
+}
+
+/* ===> AJOUT N°2 : Style pour le séparateur hr <=== */
+hr.totals-separator { // Classe spécifique pour éviter conflits
+  border: none;
+  border-top: 1px solid #dee2e6; // Utiliser $border-color-light si défini
+  margin: 0 0 25px 0; // Marge seulement en bas, avant la liste
+}
+
 /* Grille responsive pour les commandes */
 .order-list {
   display: grid;
@@ -179,12 +213,12 @@ $border-radius-base: 6px;
     letter-spacing: 0.5px;
 
     // Couleurs spécifiques pour chaque statut
-    &.status-pending    { background-color: #ffc107; color: $text-color; }
-    &.status-processing { background-color: #0dcaf0; color: $text-color; }
-    &.status-shipped    { background-color: #0d6efd; }
-    &.status-delivered  { background-color: $primary-color; } // Utiliser le vert primaire
-    &.status-cancelled  { background-color: #dc3545; }
-    &.status-unknown    { background-color: $secondary-color; } // Utiliser le gris secondaire
+    &.status-pending     { background-color: #ffc107; color: $text-color; }
+    &.status-processing  { background-color: #0dcaf0; color: $text-color; }
+    &.status-shipped     { background-color: #0d6efd; }
+    &.status-delivered   { background-color: $primary-color; } // Utiliser le vert primaire
+    &.status-cancelled   { background-color: #dc3545; }
+    &.status-unknown     { background-color: $secondary-color; } // Utiliser le gris secondaire
   }
 }
 
@@ -259,13 +293,17 @@ $border-radius-base: 6px;
   }
 
   .page-header {
-     padding: 20px 15px;
-     h2 { font-size: 1.5em; }
+    padding: 20px 15px;
+    h2 { font-size: 1.5em; }
   }
 
   .order-list {
     grid-template-columns: 1fr; // Mise en page en une seule colonne
     gap: 15px; // Réduire l'espacement
+  }
+
+  .order-item {
+    flex-direction: column; // Assure que les éléments restent en colonne
   }
 
   .order-header, .order-footer {
@@ -274,10 +312,9 @@ $border-radius-base: 6px;
     gap: 5px;
   }
 
-   .order-details {
-     grid-template-columns: 1fr; // Détails sur une colonne aussi
-     gap: 5px;
-     p { margin-bottom: 5px; }
+  .order-details {
+    /* La mise en page reste en flux normal (colonne) */
+    p { margin-bottom: 5px; }
   }
 
   .order-footer .order-total,
@@ -285,5 +322,5 @@ $border-radius-base: 6px;
     width: 100%; // Prendre toute la largeur
     text-align: center; // Centrer total et statut
   }
-   .order-footer .order-status { margin-top: 5px; } // Espace entre total et statut
+  .order-footer .order-status { margin-top: 5px; }
 }
