@@ -2,62 +2,58 @@
 import { Component, OnInit, OnChanges, Input, Output, EventEmitter, inject, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // --- Imports nécessaires pour Reactive Forms ---
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 // --- Fin Imports Reactive Forms ---
-import { Book } from '../../../models/book.model';
+import { Book } from '../../../models/book.model'; // Gardez l'import du modèle
+
+// Optionnel: Un validateur de pattern URL simple mais courant
+export const urlValidator: ValidatorFn = (control: AbstractControl): { [key: string]: any } | null => {
+  if (!control.value) {
+    return null; // Ne pas valider si le champ est vide (le rendre optionnel)
+  }
+  // Regex simple pour vérifier si ça ressemble à une URL (commence par http/https, contient au moins un . etc.)
+  // Vous pouvez utiliser une regex plus complexe si nécessaire.
+  const pattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i;
+  return pattern.test(control.value) ? null : { 'pattern': { value: control.value } };
+};
 
 @Component({
   selector: 'app-book-form',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule // Nécessaire pour [formGroup], formControlName, etc.
+    ReactiveFormsModule
   ],
   templateUrl: './book-form.component.html',
   styleUrls: ['./book-form.component.scss']
 })
 export class BookFormComponent implements OnInit, OnChanges {
 
-  // Injection du FormBuilder
   private fb = inject(FormBuilder);
 
-  // Inputs & Outputs (inchangés)
-  @Input() initialData: any | null | undefined = null; // Type any pour éviter les erreurs strictes
+  @Input() initialData: Partial<Book> | null | undefined = null;
   @Input() isSubmitting: boolean = false;
-  @Input() generalError: string | null = null; // Pour afficher une erreur venant du parent (ex: API)
-  @Output() formSubmit = new EventEmitter<Partial<any>>(); // Type Partial<any> pour la sortie
+  @Input() generalError: string | null = null;
+  @Output() formSubmit = new EventEmitter<Partial<Book>>();
   @Output() cancel = new EventEmitter<void>();
-  @Input() isEditMode: boolean = false; // Ajout de l'input manquant
+  @Input() isEditMode: boolean = false;
 
-  // --- Déclaration du FormGroup ---
-  bookForm: FormGroup = this.fb.group({}); // Initialisation vide, remplie dans ngOnInit
-  // --- Fin Déclaration FormGroup ---
+  bookForm: FormGroup = this.fb.group({});
 
   ngOnInit(): void {
-    this.initializeForm(); // Initialiser le formulaire à la création
+    this.initializeForm();
   }
 
-  // Détecter les changements sur initialData (pour le mode édition)
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['initialData'] && this.bookForm && this.initialData) {
       console.log('[BookForm] ngOnChanges: Patching form with initialData:', this.initialData);
-      // Utiliser patchValue pour ne mettre à jour que les champs fournis
-      this.bookForm.patchValue({
-        ...this.initialData,
-        // Conversion spécifique si nécessaire (ex: Date)
-        publishedDate: this.formatDateForInput(this.initialData.publishedDate)
-      });
+      this.bookForm.patchValue(this.initialData);
     }
     if (changes['generalError']) {
-      // On pourrait vouloir afficher l'erreur générale d'une manière spécifique ici
       console.log('[BookForm] Received general error:', this.generalError);
     }
     if (changes['isSubmitting']) {
-      if (this.isSubmitting) {
-        this.bookForm.disable(); // Désactiver le formulaire pendant la soumission
-      } else {
-        this.bookForm.enable(); // Réactiver après
-      }
+      if (this.isSubmitting) { this.bookForm.disable(); } else { this.bookForm.enable(); }
     }
     if (changes['isEditMode']) {
       this.isEditMode = changes['isEditMode'].currentValue;
@@ -65,134 +61,74 @@ export class BookFormComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Initialise le FormGroup avec les FormControls et les validateurs.
-   */
   private initializeForm(): void {
     this.bookForm = this.fb.group({
-      // --- Définition des contrôles avec validateurs ---
       title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
       author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      isbn: ['', [Validators.pattern(/^\d{10}(\d{3})?$/)]], // Valide ISBN-10 ou ISBN-13 (simplifié)
-      description: ['', Validators.maxLength(1000)],
-      publishedDate: [''], // Pas de validateur requis pour l'instant, mais pourrait être ajouté
-      price: [null, [Validators.required, Validators.min(0.01)]], // Prix obligatoire et positif
-      category: ['', Validators.maxLength(50)],
-      stock: [null, [Validators.min(0)]], // Stock optionnel, mais >= 0 si fourni
-      summary: [''], // Suppression du validateur required pour summary
-      coverUrl: [''], // Ajout du champ coverUrl au formulaire
-      // Pas besoin de id, createdAt, updatedAt dans le formulaire
+      coverUrl: ['', [urlValidator, Validators.maxLength(2048)]],
+      summary: ['', [Validators.maxLength(2000)]],
+      price: [null, [Validators.required, Validators.min(0.01)]],
+      category: ['', [Validators.maxLength(50)]]
     });
-
-    // Si des données initiales existent déjà au moment de l'init (moins courant mais possible)
     if (this.initialData) {
-      this.bookForm.patchValue({
-        ...this.initialData,
-        publishedDate: this.formatDateForInput(this.initialData.publishedDate)
-      });
+      this.bookForm.patchValue(this.initialData);
     }
   }
 
-  /**
-   * Gère la soumission du formulaire.
-   * Vérifie la validité avant d'émettre l'événement.
-   */
   onSubmit(): void {
-    // Marquer tous les champs comme 'touched' pour afficher les erreurs restantes
+    // console.log('[BookForm] onSubmit DÉCLENCHÉ. Valeur actuelle du formulaire:', this.bookForm.value); // <-- Ligne supprimée/commentée
     this.bookForm.markAllAsTouched();
-
     if (this.bookForm.valid) {
+      // Gardons ce log, il peut être utile de voir ce qui est réellement soumis
       console.log('[BookForm] Formulaire valide. Données soumises:', this.bookForm.value);
-      // Émettre uniquement les données du formulaire (qui sont un Partial<any>)
       this.formSubmit.emit(this.bookForm.value);
     } else {
       console.warn('[BookForm] Tentative de soumission d\'un formulaire invalide.');
-      // Optionnel : Scroller vers le premier champ invalide ou afficher un message global
       this.scrollToFirstInvalidControl();
     }
   }
 
-  /** Émet l'événement d'annulation */
   onCancel(): void {
     this.cancel.emit();
   }
 
-  /**
-   * Méthode utilitaire pour obtenir une référence facile à un contrôle du formulaire.
-   * Utilisé dans le template pour vérifier l'état d'un contrôle.
-   * Exemple: `isInvalid('title')`
-   */
-  getControl(name: string): AbstractControl | null {
-    return this.bookForm.get(name);
+  getControl(name: keyof Book | string): AbstractControl | null {
+    return this.bookForm.get(name as string);
   }
 
-  /**
-   * Vérifie si un contrôle est invalide ET a été touché ou si le formulaire a été soumis.
-   * @param name Nom du FormControl
-   * @returns boolean
-   */
-  isInvalid(name: string): boolean {
+  isInvalid(name: keyof Book | string): boolean {
     const control = this.getControl(name);
     return !!(control && control.invalid && (control.touched || control.dirty));
   }
 
-  /**
-   * Obtient le message d'erreur spécifique pour un contrôle donné.
-   * @param name Nom du FormControl
-   * @returns string | null Message d'erreur ou null
-   */
-  getErrorMessage(name: string): string | null {
+  getErrorMessage(name: keyof Book | string): string | null {
     const control = this.getControl(name);
-    if (!control || !control.errors || !(control.touched || control.dirty)) {
-      return null;
-    }
-
-    if (control.errors['required']) {
-      return 'Ce champ est obligatoire.';
-    }
-    if (control.errors['minlength']) {
-      return `Doit contenir au moins ${control.errors['minlength'].requiredLength} caractères.`;
-    }
-    if (control.errors['maxlength']) {
-      return `Ne doit pas dépasser ${control.errors['maxlength'].requiredLength} caractères.`;
-    }
-    if (control.errors['min']) {
-      return `La valeur minimale est ${control.errors['min'].min}.`;
-    }
+    if (!control || !control.errors || !(control.touched || control.dirty)) { return null; }
+    if (control.errors['required']) { return 'Ce champ est obligatoire.'; }
+    if (control.errors['minlength']) { return `Doit contenir au moins ${control.errors['minlength'].requiredLength} caractères.`; }
+    if (control.errors['maxlength']) { return `Ne doit pas dépasser ${control.errors['maxlength'].requiredLength} caractères.`; }
+    if (control.errors['min']) { return `La valeur minimale est ${control.errors['min'].min}.`; }
     if (control.errors['pattern']) {
-      if (name === 'isbn') return 'Format ISBN invalide (10 ou 13 chiffres).';
+      if (name === 'coverUrl') return 'Veuillez entrer une URL valide (ex: http://...).';
       return 'Format invalide.';
     }
-    // Ajoutez d'autres messages d'erreur personnalisés si nécessaire
     return 'Valeur invalide.';
   }
 
-  /** Formate une date (ou undefined) en chaîne<ctrl3348>-MM-DD pour l'input date */
-  private formatDateForInput(date: any): string | null { // Type any pour la compatibilité
-    if (!date) return null;
-    try {
-      const d = new Date(date);
-      // Vérifier si la date est valide après conversion
-      if (isNaN(d.getTime())) return null;
-      const year = d.getFullYear();
-      const month = (d.getMonth() + 1).toString().padStart(2, '0');
-      const day = d.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    } catch (e) {
-      console.error("Erreur formatage date:", e);
-      return null; // Retourner null si le formatage échoue
-    }
-  }
-
-  /** Fait défiler la vue vers le premier contrôle invalide trouvé */
   private scrollToFirstInvalidControl(): void {
     const firstInvalidControl = document.querySelector('form .ng-invalid');
     if (firstInvalidControl) {
       firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Essayer de donner le focus si c'est un élément focusable
       if (typeof (firstInvalidControl as HTMLElement).focus === 'function') {
         (firstInvalidControl as HTMLElement).focus();
       }
     }
   }
+
+  // La méthode objectKeys n'est plus nécessaire car le debug HTML a été retiré
+  /*
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj || {});
+  }
+  */
 }

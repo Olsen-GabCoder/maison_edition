@@ -1,207 +1,295 @@
-/* Styles généraux de la page */
+// Variables
+$primary-color: #003366;
+$secondary-color: #ffffff;
+$accent-color: #1a4a7a;
+$text-color: #333333;
+$rating-color: #f8ba00; // Couleur des étoiles
+$category-bg: #eef5fb; // Fond pour catégories
+$border-radius: 8px;
+$box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+// Global Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
-  color: #333;
-  line-height: 1.6;
+  background-color: #f5f5f5;
+  color: $text-color;
 }
 
-/* Section Hero */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: $border-radius;
+  text-decoration: none;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &-primary {
+    background-color: $primary-color;
+    color: $secondary-color;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+  
+  &-secondary {
+    background-color: #f0f0f0;
+    color: $text-color;
+    
+    &:hover {
+      background-color: darken(#f0f0f0, 10%);
+    }
+  }
+  
+  &-sm {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+// Hero Section - Blue Gradient Header
 .hero-section {
-  background: linear-gradient(135deg, #3498db, #2c3e50);
-  color: white;
+  background: linear-gradient(to bottom, $primary-color, #1c6ea4);
+  color: $secondary-color;
+  text-align: center;
   padding: 60px 20px;
-  text-align: center;
-  border-radius: 8px;
-  margin-bottom: 40px;
+  
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+  
+  p {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
 }
 
-.hero-section h1 {
-  font-size: 2.8em;
-  margin-bottom: 20px;
-}
-
-.hero-section p {
-  font-size: 1.3em;
-  max-width: 700px;
+// Featured Books Section
+.featured-books {
+  padding: 40px 20px;
+  max-width: 1200px;
   margin: 0 auto;
+  
+  h2 {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: $text-color;
+  }
 }
 
-/* Titres de section */
-h2 {
-  font-family: 'Georgia', serif;
-  color: #2c3e50;
-  margin: 30px 0 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  text-align: center;
-}
-
-/* Grille des livres */
+// Book Grid
 .book-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 30px;
+}
+
+// Book Item Card
+.book-item {
+  background-color: $secondary-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+  box-shadow: $box-shadow;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  .book-cover {
+    width: 120px;
+    height: 180px;
+    margin-right: 20px;
+    float: left;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    
+    .cover-placeholder {
+      width: 100%;
+      height: 100%;
+      background-color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      border-radius: 4px;
+    }
+  }
+  
+  .book-info {
+    flex: 1;
+    
+    h3 {
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+      color: $text-color;
+    }
+    
+    .book-author {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    
+    .book-metadata {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      
+      .book-category {
+        background-color: $category-bg;
+        color: $accent-color;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-right: 10px;
+      }
+      
+      .book-rating {
+        color: $text-color;
+        font-size: 0.9rem;
+        
+        // Style pour les étoiles
+        &::before {
+          content: "";
+          display: inline-block;
+          color: $rating-color;
+        }
+      }
+    }
+    
+    .book-summary {
+      color: #555;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin-bottom: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .book-price {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: $accent-color;
+      margin-bottom: 10px;
+    }
+  }
+  
+  .book-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    
+    a {
+      flex: 1;
+      margin: 0 5px;
+      
+      &:first-child {
+        margin-left: 0;
+      }
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+// Alert Messages
+.alert {
+  padding: 15px;
+  border-radius: $border-radius;
+  margin-bottom: 20px;
+  
+  &-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  &-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+  }
+}
+
+// Loading Indicator
+.loading-indicator {
+  text-align: center;
+  padding: 40px 0;
+  
+  .loading-message {
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+// No Books Message
+.no-books-message {
+  text-align: center;
   padding: 20px;
 }
 
-/* Style des éléments de livre */
-.book-item {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.book-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Couverture du livre */
-.book-cover {
-  height: 200px;
-  width: 100%;
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #777;
-  font-size: 0.9em;
-  font-style: italic;
-  padding: 10px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-  text-align: center;
-}
-
-/* Titre du livre */
-.book-item h3 {
-  font-size: 1.3em;
-  color: #333;
-  text-align: center;
-  margin: 0 0 10px 0;
-  font-weight: bold;
-}
-
-/* Auteur */
-.book-author {
-  font-size: 1em;
-  color: #555;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-/* Résumé du livre */
-.book-summary {
-  font-size: 0.9em;
-  color: #666;
-  text-align: justify;
-  margin-bottom: 10px;
-}
-
-/* Prix du livre */
-.book-price {
-  font-weight: bold;
-  font-size: 1.1em;
-  color: #333;
-  text-align: center;
-  margin-top: 10px;
-}
-
-/* Boutons */
-.btn {
-  display: inline-block;
-  padding: 8px 14px;
-  margin: 8px 5px 0;
-  font-size: 0.9em;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 5px;
-  transition: all 0.2s ease;
-}
-
-/* Bouton Acheter Maintenant */
-.btn-primary {
-  background-color: #28a745;
-  border: none;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #218838;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Bouton Voir Détail */
-.btn-secondary {
-  background-color: #6c757d;
-  border: none;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Message Aucun Livre */
-.no-books-message {
-  text-align: center;
-  color: #777;
-  padding: 30px 20px;
-  font-style: italic;
-}
-
-/* Message d'erreur */
-.alert-danger {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  padding: 10px 20px;
-  margin-bottom: 20px;
-  border-radius: 5px;
-}
-
-/* Message de chargement */
-.loading-indicator {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.loading-message {
-  font-size: 1.1em;
-  color: #555;
-}
-
-/* Responsive */
+// Media Queries for Responsive Design
 @media (max-width: 768px) {
-  .book-list {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+  .hero-section {
+    padding: 40px 15px;
+    
+    h1 {
+      font-size: 2.2rem;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
   }
-
-  .book-cover {
-    height: 180px;
+  
+  .featured-books h2 {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
   }
-}
-
-@media (max-width: 480px) {
+  
   .book-list {
     grid-template-columns: 1fr;
-    padding: 10px;
   }
-
-  .btn {
-    width: 100%;
+  
+  .book-item {
+    padding: 15px;
+    
+    .book-info {
+      .book-metadata {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .book-category {
+          margin-bottom: 5px;
+        }
+      }
+    }
   }
 }

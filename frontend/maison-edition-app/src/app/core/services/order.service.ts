@@ -1,256 +1,251 @@
 // src/app/core/services/order.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, distinctUntilChanged } from 'rxjs/operators'; // distinctUntilChanged ajouté pour optimisation potentielle
 import { Order, OrderStatus } from '../../models/order.model'; // Vérifiez chemin
 import { OrderItem } from '../../models/order-item.model';   // Vérifiez chemin
 import { Address } from '../../models/address.model';       // Vérifiez chemin
 import { Book } from '../../models/book.model';           // Vérifiez chemin
 
-// Clé pour le localStorage
-const USER_ORDERS_STORAGE_KEY = 'editAppUserOrders';
+// Clé localStorage unique pour toutes les commandes
+const ORDERS_STORAGE_KEY = 'editAppOrders';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
 
-  // Le BehaviorSubject pour la liste "globale" ou "admin"
+  // BehaviorSubject initialisé avec les données persistantes
   private ordersSubject = new BehaviorSubject<Order[]>(this.loadInitialOrders());
-  // L'observable exposé pour les composants qui veulent la liste admin
+  // Observable principal exposé (utilisé par admin et comme base pour user)
   public orders$: Observable<Order[]> = this.ordersSubject.asObservable();
 
   constructor() {
-    console.log('[OrderService] Initialisé.');
+    console.log(`[OrderService] Initialisé. Source de données: localStorage ('${ORDERS_STORAGE_KEY}').`);
   }
 
   /**
-   * Charge les commandes initiales pour le BehaviorSubject.
-   * Actuellement, charge uniquement les données mock.
-   * Pourrait être étendu pour fusionner avec localStorage si nécessaire.
+   * Charge les commandes depuis localStorage ou génère les mocks si vide/erreur.
    */
   private loadInitialOrders(): Order[] {
-    console.log('[OrderService] loadInitialOrders: Chargement des données mock pour BehaviorSubject.');
-    return this.generateMockOrders();
-  }
-
-  /** Génère des données simulées initiales */
-  private generateMockOrders(): Order[] {
-     // NOTE : Assurez-vous que ces données mock respectent VOS modèles actuels
-     // (id: string, pas de subTotal dans items, OrderStatus correct, etc.)
-     const mockOrders: Order[] = [
-       {
-         id: 'ORD-2023-001', orderNumber: 'CMD231115001', customerId: null, customerName: 'Alice Dupont', customerEmail: 'alice.d@email.com',
-         items: [{ bookId: 1, title: 'Le Seigneur des Anneaux', quantity: 1, price: 25.50 }, { bookId: 3, title: '1984', quantity: 1, price: 15.00 }],
-         totalAmount: 40.50, status: 'Processing', orderDate: new Date(2023, 10, 15, 10, 30), lastUpdate: new Date(2023, 10, 15, 10, 30),
-         shippingAddress: { street: '1 rue de la Paix', city: 'Paris', zipCode: '75001', country: 'France' }
-       },
-       {
-         id: 'ORD-2023-002', orderNumber: 'CMD231118002', customerId: 101, customerName: 'Bob Martin', customerEmail: 'bob.m@email.com',
-         items: [{ bookId: 2, title: 'Fondation', quantity: 1, price: 18.00 }],
-         totalAmount: 18.00, status: 'Shipped', orderDate: new Date(2023, 10, 18, 14, 0), lastUpdate: new Date(2023, 10, 19, 9, 0),
-         shippingAddress: { street: '10 avenue des Champs', city: 'Lyon', zipCode: '69002', country: 'France' }
-       },
-       // Ajoutez d'autres mocks si nécessaire
-     ];
-     console.log('[OrderService] generateMockOrders: Données mock générées.');
-     return mockOrders.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
-  }
-
-  // --- Méthodes pour lire/écrire les commandes UTILISATEUR dans localStorage ---
-
-  /** Récupère les commandes stockées localement pour l'utilisateur */
-  private getUserOrdersFromStorage(): Order[] {
+    console.log(`[OrderService] loadInitialOrders: Lecture depuis localStorage ('${ORDERS_STORAGE_KEY}').`);
     try {
-      const storedOrders = localStorage.getItem(USER_ORDERS_STORAGE_KEY);
-      const orders = storedOrders ? JSON.parse(storedOrders) : [];
-      // Important: Reconvertir les chaînes de date en objets Date
-      return orders.map((order: any) => ({
-          ...order,
-          orderDate: new Date(order.orderDate),
-          lastUpdate: new Date(order.lastUpdate)
-      }));
-    } catch (e) {
-      console.error('[OrderService] Erreur lecture localStorage pour commandes utilisateur:', e);
-      return [];
-    }
-  }
-
-  /** Sauvegarde la liste complète des commandes UTILISATEUR dans localStorage */
-  private saveUserOrdersToStorage(orders: Order[]): void {
-    try {
-      // Trier avant sauvegarde peut être une bonne idée
-      const sortedOrders = orders.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
-      localStorage.setItem(USER_ORDERS_STORAGE_KEY, JSON.stringify(sortedOrders));
-      console.log(`[OrderService] ${orders.length} commandes utilisateur sauvegardées dans localStorage.`);
-    } catch (e) {
-      console.error('[OrderService] Erreur écriture localStorage pour commandes utilisateur:', e);
-    }
-  }
-
-  /** Ajoute UNE commande au stockage local UTILISATEUR */
-  private addOrderToUserStorage(order: Order): void {
-      const currentStoredOrders = this.getUserOrdersFromStorage();
-      if (!currentStoredOrders.some(o => o.id === order.id)) {
-          const updatedStoredOrders = [...currentStoredOrders, order];
-          this.saveUserOrdersToStorage(updatedStoredOrders);
+      const storedOrders = localStorage.getItem(ORDERS_STORAGE_KEY);
+      if (storedOrders) {
+        const orders = JSON.parse(storedOrders);
+        const typedOrders = this.parseDates(orders);
+        console.log(`[OrderService] loadInitialOrders: ${typedOrders.length} commandes chargées.`);
+        // Retourner trié
+        return typedOrders.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
       } else {
-           console.warn(`[OrderService] Tentative d'ajout au storage d'une commande déjà existante (ID: ${order.id})`);
+        console.log('[OrderService] loadInitialOrders: localStorage vide. Génération mocks.');
+        const mockOrders = this.generateMockOrders();
+        this.saveOrdersToStorage(mockOrders); // Sauvegarde initiale
+        return mockOrders;
+      }
+    } catch (e) {
+      console.error('[OrderService] Erreur lecture localStorage:', e);
+      const mockOrders = this.generateMockOrders();
+      this.saveOrdersToStorage(mockOrders); // Tenter sauvegarde même si erreur lecture
+      return mockOrders;
+    }
+  }
+
+  /** Sauvegarde la liste complète des commandes dans localStorage */
+  private saveOrdersToStorage(orders: Order[]): void {
+      try {
+          // Toujours trier avant de sauvegarder pour la cohérence
+          const sortedOrders = orders.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
+          localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(sortedOrders));
+          console.log(`[OrderService] saveOrdersToStorage: ${orders.length} commandes sauvegardées ('${ORDERS_STORAGE_KEY}').`);
+      } catch (e) {
+          console.error('[OrderService] saveOrdersToStorage: Erreur écriture localStorage:', e);
       }
   }
 
-   /** Met à jour UNE commande dans le stockage local UTILISATEUR */
-   private updateOrderInUserStorage(updatedOrder: Order): void {
-     const currentStoredOrders = this.getUserOrdersFromStorage();
-     const index = currentStoredOrders.findIndex(o => o.id === updatedOrder.id);
-     if (index !== -1) {
-       currentStoredOrders[index] = updatedOrder; // Met à jour l'élément
-       this.saveUserOrdersToStorage(currentStoredOrders);
-       console.log(`[OrderService] Commande ${updatedOrder.id} mise à jour dans localStorage.`);
-     } else {
-         console.warn(`[OrderService] Tentative de mise à jour localStorage pour commande ${updatedOrder.id} non trouvée.`);
-         // Optionnel : ajouter la commande si elle manque ? Ou logguer l'incohérence.
-         // this.addOrderToUserStorage(updatedOrder); // Ceci pourrait ajouter une commande si elle a été supprimée ailleurs
-     }
-   }
+  /** Génère les données simulées initiales (COMPLÈTES) */
+  private generateMockOrders(): Order[] {
+     // Assurez-vous que ces données respectent l'interface Order
+     const mockOrders: Order[] = [
+       { // Commande 1 (complète)
+         id: 'ORD-MOCK-001', // ID String
+         orderNumber: 'CMD-MOCK-001', // Numéro Commande
+         customerId: null, // Invité
+         customerName: 'Alice Mock',
+         customerEmail: 'alice.mock@email.com',
+         items: [ // Tableau d'OrderItem
+             { bookId: 1, title: 'Le Seigneur des Anneaux', quantity: 1, price: 25.50 },
+             { bookId: 3, title: '1984', quantity: 1, price: 15.00 }
+         ],
+         totalAmount: (25.50 * 1) + (15.00 * 1), // 40.50
+         status: 'Processing', // Type OrderStatus
+         orderDate: new Date(2023, 10, 15, 10, 30), // Objet Date
+         lastUpdate: new Date(2023, 10, 15, 10, 30), // Objet Date
+         shippingAddress: { street: '1 rue Mock', city: 'Mockville', zipCode: '75000', country: 'France' } // Objet Address
+       },
+       { // Commande 2 (complète)
+         id: 'ORD-MOCK-002',
+         orderNumber: 'CMD-MOCK-002',
+         customerId: 101, // Client ID numérique
+         customerName: 'Bob Mock',
+         customerEmail: 'bob.mock@email.com',
+         items: [{ bookId: 2, title: 'Fondation', quantity: 1, price: 18.00 }],
+         totalAmount: 18.00 * 1, // 18.00
+         status: 'Shipped',
+         orderDate: new Date(2023, 10, 18, 14, 0),
+         lastUpdate: new Date(2023, 10, 19, 9, 0),
+         shippingAddress: { street: '10 avenue Mock', city: 'Mockcity', zipCode: '69000', country: 'France' }
+       },
+        { // Commande 3 - Livrée (complète)
+         id: 'ORD-MOCK-003',
+         orderNumber: 'CMD-MOCK-003',
+         customerId: null,
+         customerName: 'Claire Mock',
+         customerEmail: 'claire.mock@email.com',
+         items: [{ bookId: 1, title: 'Le Seigneur des Anneaux', quantity: 1, price: 25.50 }], // Quantité 1
+         totalAmount: 25.50 * 1, // 25.50
+         status: 'Delivered', // Statut livré pour tester le filtre utilisateur
+         orderDate: new Date(2023, 9, 5, 11, 15),
+         lastUpdate: new Date(2023, 9, 10, 16, 30),
+         shippingAddress: { street: '5 Place Mock', city: 'Mockcity', zipCode: '69002', country: 'France' }
+       }
+     ];
+     console.log('[OrderService] generateMockOrders: Données mock générées.');
+     return mockOrders; // Tri appliqué par loadInitialOrders ou saveOrdersToStorage
+  }
 
-  // --- Méthodes de Service Publiques ---
+  /** Helper pour parser les dates après lecture JSON */
+  private parseDates(orders: any[]): Order[] {
+     return orders.map(order => ({
+         ...order,
+         orderDate: new Date(order.orderDate),
+         lastUpdate: new Date(order.lastUpdate)
+     }));
+  }
 
-  /** Retourne l'observable pour la liste principale/admin */
+  // --- Méthodes Publiques ---
+
+  /** Retourne l'observable pour la liste principale/admin (toutes commandes) */
   getOrders(): Observable<Order[]> {
+    console.log('[OrderService] getOrders appelé (pour Admin).');
     return this.orders$;
   }
 
-  /** Récupère les commandes spécifiques à l'utilisateur (depuis localStorage) */
+  /** Retourne un observable pour la liste utilisateur (commandes non 'Delivered') */
   getUserOrders(): Observable<Order[]> {
-      console.log('[OrderService] getUserOrders appelé (lecture localStorage).');
-      return of(this.getUserOrdersFromStorage()); // Retourne un Observable pour cohérence
+      console.log('[OrderService] getUserOrders appelé (pour Utilisateur, filtre "Delivered").');
+      return this.orders$.pipe(
+          // Filtre pour exclure les commandes livrées
+          map(allOrders => allOrders.filter(order => order.status !== 'Delivered')),
+          // distinctUntilChanged pourrait éviter des émissions inutiles si la liste filtrée ne change pas
+          distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+          tap(userVisibleOrders => console.log(`[OrderService] getUserOrders: ${userVisibleOrders.length} commandes visibles émises.`))
+      );
   }
 
-  /** Récupère une commande par ID (recherche dans la liste principale/admin) */
+  /** Récupère une commande par ID (recherche dans la liste principale) */
   getOrderById(id: string): Observable<Order | undefined> {
-    // Recherche dans la liste principale (admin) émise par BehaviorSubject
-    return this.orders$.pipe(map(orders => orders.find(order => order.id === id)));
+    return this.orders$.pipe(
+        map(orders => orders.find(order => order.id === id)),
+        // Peut être utile d'ajouter un tap pour logguer si trouvé ou non
+        tap(foundOrder => console.log(`[OrderService] getOrderById(${id}): ${foundOrder ? 'Trouvée' : 'Non trouvée'}`))
+        );
   }
 
-  /**
-   * Ajoute une nouvelle commande :
-   * 1. Met à jour le BehaviorSubject (pour la liste admin).
-   * 2. Ajoute la commande au localStorage (pour la liste utilisateur).
-   */
+  /** Ajoute une nouvelle commande */
   addOrder(
     orderFormData: { customerName: string, customerEmail: string, customerId?: string | number | null, shippingAddress: Address },
     selectedBook: Book
   ): Observable<Order> {
-
-    const currentAdminOrders = this.ordersSubject.getValue();
-    console.log(`[OrderService] addOrder: Nombre commandes admin AVANT ajout: ${currentAdminOrders.length}`);
-
-    // Générer infos internes
+    const currentOrders = this.ordersSubject.getValue();
+    // Génération de la nouvelle commande (logique inchangée)
     const newId: string = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
     const orderNumber = `CMD${newId.slice(-8)}`;
-    const orderDate = new Date();
-    const lastUpdate = new Date();
-    const status: OrderStatus = 'Shipped'; // Statut par défaut
-
-    // Créer OrderItem
-    const orderItem: OrderItem = {
-      bookId: selectedBook.id,
-      title: selectedBook.title,
-      quantity: 1,
-      price: selectedBook.price
-    };
-
-    // Calculer total
+    const orderDate = new Date(); const lastUpdate = new Date(); const status: OrderStatus = 'Shipped';
+    const orderItem: OrderItem = { bookId: selectedBook.id, title: selectedBook.title, quantity: 1, price: selectedBook.price };
     const totalAmount = orderItem.price * orderItem.quantity;
-
-    // Gérer customerId (vers number | null)
     let customerIdToSave: number | null = null;
-    if (orderFormData.customerId != null && orderFormData.customerId !== '') { // Vérifier null/undefined/vide
-        const parsedId = parseInt(String(orderFormData.customerId), 10);
-        if (!isNaN(parsedId)) {
-            customerIdToSave = parsedId;
-        } else {
-             console.warn(`[OrderService] addOrder: customerId "${orderFormData.customerId}" fourni mais invalide.`);
-        }
-    }
+    if (orderFormData.customerId != null && orderFormData.customerId !== '') { const parsedId = parseInt(String(orderFormData.customerId), 10); if (!isNaN(parsedId)) customerIdToSave = parsedId; else console.warn(`[OrderService] addOrder: customerId "${orderFormData.customerId}" fourni mais invalide.`); }
+    const newOrder: Order = { id: newId, orderNumber, orderDate, status, totalAmount, lastUpdate, customerName: orderFormData.customerName, customerEmail: orderFormData.customerEmail, customerId: customerIdToSave, shippingAddress: orderFormData.shippingAddress, items: [orderItem] };
 
-    // ===> CORRECTION : Définition complète de l'objet newOrder <===
-    const newOrder: Order = {
-      id: newId,
-      orderNumber: orderNumber,
-      orderDate: orderDate,
-      status: status,
-      totalAmount: totalAmount,
-      lastUpdate: lastUpdate,
-      customerName: orderFormData.customerName,
-      customerEmail: orderFormData.customerEmail,
-      customerId: customerIdToSave,
-      shippingAddress: orderFormData.shippingAddress,
-      items: [orderItem]
-    };
-    // ===> FIN CORRECTION <===
-
-    // 1. Mettre à jour la liste admin via BehaviorSubject
-    const updatedAdminOrders = [...currentAdminOrders, newOrder].sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
-    this.ordersSubject.next(updatedAdminOrders);
-    console.log('[OrderService] addOrder: Notifié les abonnés admin (BehaviorSubject).');
-
-    // 2. AJOUTER au localStorage pour l'utilisateur
-    this.addOrderToUserStorage(newOrder);
-
-    console.log('[OrderService] addOrder: Ajout terminé.');
-    return of(newOrder); // Retourner la commande créée
+    // Mettre à jour l'état et persister
+    const updatedOrders = [...currentOrders, newOrder]; // Ajout simple
+    this.ordersSubject.next(updatedOrders); // Émettre la nouvelle liste (le tri se fera à la sauvegarde)
+    this.saveOrdersToStorage(updatedOrders); // Sauvegarde dans l'unique localStorage
+    console.log('[OrderService] addOrder: Ajout terminé et sauvegardé.');
+    return of(newOrder);
   }
 
-  /**
-   * Met à jour le statut d'une commande :
-   * 1. Met à jour le BehaviorSubject (pour admin).
-   * 2. Met à jour la commande dans localStorage (pour utilisateur).
-   */
+  /** Met à jour le statut d'une commande */
   updateOrderStatus(id: string, newStatus: OrderStatus): Observable<Order | undefined> {
-    let currentAdminOrders = this.ordersSubject.getValue();
-    const orderIndex = currentAdminOrders.findIndex(order => order.id === id);
+    let currentOrders = this.ordersSubject.getValue();
+    const orderIndex = currentOrders.findIndex(order => order.id === id);
     let updatedOrder: Order | undefined = undefined;
 
     if (orderIndex !== -1) {
-      updatedOrder = {
-          ...currentAdminOrders[orderIndex],
-          status: newStatus,
-          lastUpdate: new Date() // Nom de propriété correct
-      };
-      const updatedAdminList = [...currentAdminOrders]; // Copie
-      updatedAdminList[orderIndex] = updatedOrder; // Remplacement
+      // Créer l'objet mis à jour
+      updatedOrder = { ...currentOrders[orderIndex], status: newStatus, lastUpdate: new Date() };
+      // Créer une nouvelle référence de tableau pour l'immutabilité
+      const updatedList = currentOrders.map(order => order.id === id ? updatedOrder! : order);
 
-      // 1. Mettre à jour la liste admin
-      this.ordersSubject.next(updatedAdminList);
-      console.log(`[OrderService] updateOrderStatus: Statut mis à jour pour admin pour ID ${id}.`);
-
-      // 2. METTRE A JOUR le localStorage pour l'utilisateur
-      this.updateOrderInUserStorage(updatedOrder);
-
+      // Mettre à jour l'état et persister
+      this.ordersSubject.next(updatedList);
+      this.saveOrdersToStorage(updatedList);
+      console.log(`[OrderService] updateOrderStatus: Statut mis à jour et sauvegardé pour ID ${id}.`);
       return of(updatedOrder);
     } else {
-      console.warn(`[OrderService] updateOrderStatus: Commande ID ${id} non trouvée dans la liste admin.`);
+      console.warn(`[OrderService] updateOrderStatus: Commande ID ${id} non trouvée.`);
       return of(undefined);
     }
   }
 
-  /**
-   * Supprime une commande UNIQUEMENT de la liste admin (BehaviorSubject).
-   * Ne touche pas au localStorage utilisateur dans cette version.
-   */
+  /** Supprime une commande */
   deleteOrder(id: string): Observable<void> {
-    let currentAdminOrders = this.ordersSubject.getValue();
-    const updatedOrders = currentAdminOrders.filter(order => order.id !== id);
+    let currentOrders = this.ordersSubject.getValue();
+    const updatedOrders = currentOrders.filter(order => order.id !== id);
 
-    if (updatedOrders.length < currentAdminOrders.length) {
-      this.ordersSubject.next(updatedOrders); // Met à jour seulement la liste admin
-      console.log(`[OrderService] deleteOrder: Commande ${id} supprimée de la liste admin.`);
-      return of(undefined);
+    // Vérifier si une suppression a eu lieu
+    if (updatedOrders.length < currentOrders.length) {
+      // Mettre à jour l'état et persister
+      this.ordersSubject.next(updatedOrders);
+      this.saveOrdersToStorage(updatedOrders);
+      console.log(`[OrderService] deleteOrder: Commande ${id} supprimée et sauvegardée.`);
+      return of(undefined); // Succès
     } else {
-      console.warn(`[OrderService] deleteOrder: Commande ${id} non trouvée dans liste admin.`);
+      console.warn(`[OrderService] deleteOrder: Commande ${id} non trouvée.`);
       return throwError(() => new Error(`Commande ${id} non trouvée.`));
     }
+  }
+
+   /** Supprime plusieurs commandes */
+   deleteBulkOrders(ids: string[]): Observable<{success: string[], failed: string[]}> {
+    if (!ids || ids.length === 0) { return of({success: [], failed: []}); }
+
+    const currentOrders = this.ordersSubject.getValue();
+    const results = {success: [] as string[], failed: [] as string[]};
+
+    // Filtrer pour ne garder que les commandes dont l'ID n'est PAS dans la liste à supprimer
+    const updatedOrders = currentOrders.filter(order => {
+      const shouldDelete = ids.includes(order.id);
+      if (shouldDelete) { results.success.push(order.id); } // Enregistrer les succès
+      return !shouldDelete; // Garder si non marqué pour suppression
+    });
+
+    // Identifier les échecs (IDs demandés mais pas trouvés dans les succès)
+    results.failed = ids.filter(id => !results.success.includes(id));
+
+    // Si au moins une commande a été supprimée, mettre à jour l'état et persister
+    if (results.success.length > 0) {
+      this.ordersSubject.next(updatedOrders);
+      this.saveOrdersToStorage(updatedOrders);
+      console.log(`[OrderService] deleteBulkOrders: ${results.success.length} commandes supprimées.`);
+      if (results.failed.length > 0) {
+         console.warn(`[OrderService] deleteBulkOrders: IDs non trouvés:`, results.failed);
+      }
+    } else {
+       console.log(`[OrderService] deleteBulkOrders: Aucune commande trouvée à supprimer pour les IDs fournis.`);
+    }
+
+    return of(results); // Retourner le résultat
   }
 }

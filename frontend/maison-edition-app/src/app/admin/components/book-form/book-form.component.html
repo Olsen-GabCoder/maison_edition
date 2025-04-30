@@ -13,7 +13,6 @@
     <input type="text" id="title" class="form-control" formControlName="title"
            placeholder="Entrez le titre du livre"
            [ngClass]="{ 'is-invalid': isInvalid('title') }">
-    <!-- Affichage conditionnel des erreurs pour 'title' -->
     <div *ngIf="isInvalid('title')" class="invalid-feedback">
       {{ getErrorMessage('title') }}
     </div>
@@ -30,29 +29,29 @@
     </div>
   </div>
 
-  <!-- Champ ISBN -->
+  <!-- Champ URL de la couverture -->
   <div class="form-group mb-3">
-    <label for="isbn" class="form-label">ISBN</label>
-    <input type="text" id="isbn" class="form-control" formControlName="isbn"
-           placeholder="ISBN-10 ou ISBN-13 (ex: 9782070360536)"
-           [ngClass]="{ 'is-invalid': isInvalid('isbn') }">
-    <div *ngIf="isInvalid('isbn')" class="invalid-feedback">
-      {{ getErrorMessage('isbn') }}
+    <label for="coverUrl" class="form-label">URL de la couverture</label>
+    <input type="url" id="coverUrl" class="form-control" formControlName="coverUrl"
+           placeholder="https://exemple.com/image.jpg"
+           [ngClass]="{ 'is-invalid': isInvalid('coverUrl') }">
+    <div *ngIf="isInvalid('coverUrl')" class="invalid-feedback">
+      {{ getErrorMessage('coverUrl') }}
     </div>
   </div>
 
-  <!-- Champ Description -->
+  <!-- Champ Résumé -->
   <div class="form-group mb-3">
-    <label for="description" class="form-label">Description</label>
-    <textarea id="description" class="form-control" formControlName="description" rows="4"
-              placeholder="Brève description du livre"
-              [ngClass]="{ 'is-invalid': isInvalid('description') }"></textarea>
-    <div *ngIf="isInvalid('description')" class="invalid-feedback">
-      {{ getErrorMessage('description') }}
+    <label for="summary" class="form-label">Résumé</label>
+    <textarea id="summary" class="form-control" formControlName="summary" rows="4"
+              placeholder="Résumé du livre"
+              [ngClass]="{ 'is-invalid': isInvalid('summary') }"></textarea>
+    <div *ngIf="isInvalid('summary')" class="invalid-feedback">
+      {{ getErrorMessage('summary') }}
     </div>
   </div>
 
-  <!-- Ligne pour Prix et Stock -->
+  <!-- Ligne pour Prix et Catégorie -->
   <div class="row mb-3">
     <!-- Champ Prix -->
     <div class="col-md-6 form-group">
@@ -65,36 +64,11 @@
       </div>
     </div>
 
-    <!-- Champ Stock -->
+    <!-- Champ Catégorie -->
     <div class="col-md-6 form-group">
-      <label for="stock" class="form-label">Stock</label>
-      <input type="number" id="stock" class="form-control" formControlName="stock"
-             placeholder="Quantité disponible" min="0" step="1"
-             [ngClass]="{ 'is-invalid': isInvalid('stock') }">
-      <div *ngIf="isInvalid('stock')" class="invalid-feedback">
-        {{ getErrorMessage('stock') }}
-      </div>
-    </div>
-  </div>
-
-  <!-- Ligne pour Date de publication et Catégorie -->
-   <div class="row mb-3">
-     <!-- Champ Date de publication -->
-     <div class="col-md-6 form-group">
-       <label for="publishedDate" class="form-label">Date de publication</label>
-       <input type="date" id="publishedDate" class="form-control"
-              formControlName="publishedDate"
-              [ngClass]="{ 'is-invalid': isInvalid('publishedDate') }">
-       <div *ngIf="isInvalid('publishedDate')" class="invalid-feedback">
-         {{ getErrorMessage('publishedDate') }}
-       </div>
-     </div>
-
-     <!-- Champ Catégorie -->
-     <div class="col-md-6 form-group">
        <label for="category" class="form-label">Catégorie</label>
        <input type="text" id="category" class="form-control" formControlName="category"
-              placeholder="Ex: Fantasy, Science-Fiction"
+              placeholder="Ex: Roman, Biographie"
               [ngClass]="{ 'is-invalid': isInvalid('category') }">
        <div *ngIf="isInvalid('category')" class="invalid-feedback">
          {{ getErrorMessage('category') }}
@@ -102,13 +76,12 @@
      </div>
    </div>
 
-
   <!-- Boutons d'action -->
   <div class="form-actions d-flex justify-content-end gap-2 mt-4">
     <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="isSubmitting">
       Annuler
     </button>
-    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || bookForm.invalid">
+    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting || !bookForm.valid">
       <span *ngIf="!isSubmitting">{{ isEditMode ? 'Mettre à jour' : 'Ajouter le livre' }}</span>
       <span *ngIf="isSubmitting">
         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
