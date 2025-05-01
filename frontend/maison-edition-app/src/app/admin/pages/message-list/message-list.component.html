@@ -1,47 +1,100 @@
+<!-- src/app/admin/pages/message-list/message-list.component.html -->
 <div class="admin-page-header">
-    <h2>Messages Reçus</h2>
-    <p>Liste des messages envoyés via le formulaire de contact.</p>
+  <h2>Messages Reçus</h2>
+  <p>Liste des messages envoyés via le formulaire de contact.</p>
+  <!-- Message d'erreur global -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger mt-2">
+     {{ errorMessage }}
   </div>
-  
-  <div class="admin-page-content">
-    <div *ngIf="messages$ | async as messages; else loadingOrError">
-      <div *ngIf="messages.length > 0; else noMessages" class="message-list-container">
-        <table class="message-table">
+</div>
+
+<div class="admin-page-content">
+  <div *ngIf="messages$ | async as messages; else loadingOrError">
+
+    <!-- === Section Tableau des Messages === -->
+    <div *ngIf="messages.length > 0; else noMessages" class="message-list-container mb-4"> <!-- Ajout marge basse -->
+      <div class="table-responsive"> <!-- Pour petits écrans -->
+        <table class="message-table table table-hover align-middle"> <!-- Ajout table-hover et align-middle -->
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Sujet</th>
-              <th>Message (extrait)</th>
-              <th>Actions</th>
+              <!-- Optionnel: Colonne statut lu/non lu -->
+              <th scope="col" style="width: 30px;" title="Statut"></th>
+              <th scope="col">Date</th>
+              <th scope="col">Nom</th>
+              <th scope="col">Email</th>
+              <th scope="col">Sujet</th>
+              <th scope="col">Message (extrait)</th>
+              <th scope="col" class="text-end">Actions</th> <!-- Aligner à droite -->
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let message of messages" class="message-item">
+            <!-- Rendre la ligne cliquable SAUF sur les actions -->
+            <tr *ngFor="let message of messages"
+                class="message-item"
+                [class.table-secondary]="!message.isRead" 
+                [class.selected-message]="selectedMessage?.id === message.id" 
+                (click)="viewMessage(message)" style="cursor: pointer;">
+
+              <!-- Indicateur Lu/Non lu -->
+              <td title="{{ message.isRead ? 'Lu' : 'Non lu' }}">
+                 <i class="fas fa-envelope-open-text text-muted" *ngIf="message.isRead"></i>
+                 <i class="fas fa-envelope text-primary fw-bold" *ngIf="!message.isRead"></i>
+              </td>
+
+              <!-- Informations Message -->
               <td>{{ message.date | date: 'dd/MM/yy HH:mm' }}</td>
               <td>{{ message.name }}</td>
-              <td><a [href]="'mailto:' + message.email">{{ message.email }}</a></td>
-              <td>{{ message.subject }}</td>
-              <td>{{ message.message | slice: 0:100 }}{{ message.message.length > 100 ? '...' : '' }}</td>
-              <td>
-                <button (click)="deleteMessage(message.id)" class="btn btn-danger btn-sm" title="Supprimer">
+              <td><a [href]="'mailto:' + message.email" (click)="$event.stopPropagation()">{{ message.email }}</a></td> <!-- Stop propagation sur lien -->
+              <td>{{ message.subject || '(Aucun sujet)'}}</td>
+              <td>{{ message.message | slice: 0:80 }}{{ message.message.length > 80 ? '...' : '' }}</td>
+
+              <!-- Actions -->
+              <td class="text-end">
+                <!-- Empêcher le clic de la ligne sur le bouton -->
+                <button (click)="deleteMessage(message.id); $event.stopPropagation()"
+                        class="btn btn-outline-danger btn-sm" title="Supprimer">
                   <i class="fas fa-trash-alt"></i>
                 </button>
+                 <button (click)="viewMessage(message); $event.stopPropagation()"
+                         class="btn btn-outline-info btn-sm ms-1" title="Voir détails">
+                   <i class="fas fa-eye"></i>
+                 </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-  
-      <ng-template #noMessages>
-        <p class="alert alert-info">Aucun message reçu pour le moment.</p>
-      </ng-template>
-  
     </div>
-  
-    <ng-template #loadingOrError>
-      <p>Chargement des messages...</p>
+
+    <ng-template #noMessages>
+      <p class="alert alert-info">Aucun message reçu pour le moment.</p>
     </ng-template>
+
+    <!-- === Section Détail du Message Sélectionné === -->
+    <div *ngIf="selectedMessage" class="message-detail-card card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+             <h5 class="mb-0">Détail du Message</h5>
+             <button type="button" class="btn-close" aria-label="Fermer" (click)="closeMessageDetail()"></button>
+        </div>
+        <div class="card-body">
+            <p><strong>Date :</strong> {{ selectedMessage.date | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+            <p><strong>De :</strong> {{ selectedMessage.name }} (<a [href]="'mailto:'+selectedMessage.email">{{selectedMessage.email}}</a>)</p>
+            <p><strong>Sujet :</strong> {{ selectedMessage.subject || '(Aucun sujet)'}}</p>
+            <hr>
+            <p><strong>Message :</strong></p>
+            <!-- Utiliser pre pour préserver les sauts de ligne -->
+            <pre class="message-content bg-light p-3 border rounded">{{ selectedMessage.message }}</pre>
+        </div>
+         <div class="card-footer text-end">
+             <button class="btn btn-secondary btn-sm" (click)="closeMessageDetail()">Fermer</button>
+         </div>
+    </div>
+    <!-- === Fin Section Détail === -->
+
   </div>
-  
+
+  <ng-template #loadingOrError>
+    <p *ngIf="isLoading">Chargement des messages...</p>
+    <!-- Message d'erreur déjà géré en haut -->
+  </ng-template>
+</div>

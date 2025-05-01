@@ -1,0 +1,60 @@
+<!-- src/app/pages/login/login.component.html -->
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+          <div class="card-body p-4 p-md-5">
+            <h2 class="card-title text-center mb-4">Connexion Client</h2>
+  
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+  
+               <!-- Affichage Erreur Générale -->
+               <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center" role="alert">
+                  <i class="fas fa-times-circle me-2"></i>
+                  <div>{{ errorMessage }}</div>
+               </div>
+  
+              <!-- Champ Email -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Adresse Email</label>
+                <input type="email" id="email" class="form-control" formControlName="email" placeholder="vous@exemple.com"
+                       [ngClass]="{'is-invalid': email?.invalid && (email?.dirty || email?.touched)}">
+                 <div *ngIf="email?.invalid && (email?.dirty || email?.touched)" class="invalid-feedback">
+                    <small *ngIf="email?.errors?.['required']">L'email est requis.</small>
+                    <small *ngIf="email?.errors?.['email']">Format d'email invalide.</small>
+                 </div>
+              </div>
+  
+              <!-- Champ Mot de Passe -->
+              <div class="mb-3">
+                <label for="password" class="form-label">Mot de passe</label>
+                <input type="password" id="password" class="form-control" formControlName="password" placeholder="********"
+                       [ngClass]="{'is-invalid': password?.invalid && (password?.dirty || password?.touched)}">
+                 <div *ngIf="password?.invalid && (password?.dirty || password?.touched)" class="invalid-feedback">
+                    <small *ngIf="password?.errors?.['required']">Le mot de passe est requis.</small>
+                 </div>
+                 <!-- Optionnel: Lien Mot de passe oublié -->
+                 <!-- <div class="text-end mt-1"><a href="#" class="small text-muted">Mot de passe oublié ?</a></div> -->
+              </div>
+  
+              <!-- Bouton Submit -->
+              <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+                </button>
+              </div>
+  
+            </form>
+  
+            <hr class="my-4">
+  
+            <div class="text-center text-muted">
+              Pas encore de compte ? <a routerLink="/register">Inscrivez-vous ici</a>
+            </div>
+  
+          </div> <!-- Fin card-body -->
+        </div> <!-- Fin card -->
+      </div> <!-- Fin col -->
+    </div> <!-- Fin row -->
+  </div> <!-- Fin container -->

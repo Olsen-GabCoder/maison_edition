@@ -1,0 +1,171 @@
+// login.component.scss – Version Prestige pour leader africain de la tech
+
+// 🎨 Design Tokens – Modern UI
+$clr-primary: #0f62fe;
+$clr-primary-hover: #0043ce;
+$clr-error: #da1e28;
+$clr-surface: #ffffff;
+$clr-background: #f4f7fa;
+$clr-text: #161616;
+$clr-muted: #6f6f6f;
+$clr-border: #dcdfe3;
+
+$radius-xl: 1.25rem;
+$radius-md: 0.75rem;
+$shadow-elevated: 0 10px 40px rgba(0, 0, 0, 0.08);
+$shadow-focus: 0 0 0 4px rgba(15, 98, 254, 0.3);
+
+$font-sans: 'Inter', 'Segoe UI', sans-serif;
+$transition: all 0.25s ease;
+
+// 🌐 Container global
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #eef2f7, #e2e8f0);
+  padding: 2rem;
+  font-family: $font-sans;
+}
+
+// 🧾 Carte de connexion
+.card {
+  background-color: $clr-surface;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-elevated;
+  padding: 3.5rem 3rem;
+  max-width: 480px;
+  width: 100%;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    color: $clr-text;
+    margin-bottom: 2rem;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+
+    .alert-danger {
+      background-color: rgba($clr-error, 0.1);
+      color: $clr-error;
+      border: 1px solid rgba($clr-error, 0.3);
+      padding: 1rem;
+      border-radius: $radius-md;
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      gap: 0.6rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: $clr-text;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    input {
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      border: 1px solid $clr-border;
+      border-radius: $radius-md;
+      background-color: $clr-surface;
+      color: $clr-text;
+      transition: $transition;
+
+      &::placeholder {
+        color: $clr-muted;
+      }
+
+      &:focus {
+        border-color: $clr-primary;
+        box-shadow: $shadow-focus;
+        outline: none;
+      }
+
+      &.is-invalid {
+        border-color: $clr-error;
+      }
+    }
+
+    .invalid-feedback {
+      color: $clr-error;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    .d-grid {
+      margin-top: 1rem;
+
+      button {
+        padding: 0.85rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: $clr-primary;
+        color: white;
+        border: none;
+        border-radius: $radius-md;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+
+        &:hover {
+          background-color: $clr-primary-hover;
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .spinner-border {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+
+    .text-end {
+      font-size: 0.85rem;
+      a {
+        color: $clr-muted;
+        text-decoration: none;
+
+        &:hover {
+          color: $clr-primary;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  hr {
+    margin: 2.5rem 0;
+    border-color: $clr-border;
+  }
+
+  .text-muted {
+    text-align: center;
+    font-size: 0.9rem;
+    color: $clr-muted;
+
+    a {
+      color: $clr-primary;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

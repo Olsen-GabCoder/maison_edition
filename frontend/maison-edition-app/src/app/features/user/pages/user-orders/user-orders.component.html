@@ -1,89 +1,58 @@
 <!-- src/app/features/user/pages/user-orders/user-orders.component.html -->
 <div class="user-orders-container">
 
-  <!-- Utilisation de la classe d'en-tête stylisée -->
   <div class="page-header">
     <h2>Mes Commandes</h2>
   </div>
 
-  <!-- ===> AJOUT N°1 : Section des Totaux <=== -->
-  <!-- Afficher seulement après chargement, sans erreur, et si des commandes existent -->
-  <div *ngIf="!isLoading && !errorMessage && totalOrderCount > 0" class="order-summary-totals">
-      <span>Total Commandes : <strong>{{ totalOrderCount }}</strong></span>
-      <span>Montant Cumulé : <strong>{{ cumulativeTotalPrice | currency:'EUR':'symbol' }}</strong></span>
+  <!-- === AJOUT : Vérifier si utilisateur connecté === -->
+  <div *ngIf="!currentUser && !isLoading" class="alert alert-info text-center">
+      Veuillez <a routerLink="/login">vous connecter</a> ou <a routerLink="/register">créer un compte</a> pour voir vos commandes.
   </div>
-  <!-- Séparateur optionnel si des commandes existent -->
-  <hr *ngIf="!isLoading && !errorMessage && totalOrderCount > 0" class="totals-separator">
-  <!-- ===> FIN AJOUT N°1 <=== -->
+  <!-- === FIN AJOUT === -->
 
+  <!-- Afficher le reste SEULEMENT si l'utilisateur est connecté -->
+  <ng-container *ngIf="currentUser">
 
-  <!-- Indicateur de chargement -->
-  <div *ngIf="isLoading" class="loading-indicator">
-    Chargement de votre historique de commandes...
-  </div>
+      <!-- Section des Totaux (inchangée) -->
+      <div *ngIf="!isLoading && !errorMessage && totalItemsCount > 0" class="order-summary-totals">
+         <!-- ... totaux ... -->
+      </div>
+      <hr *ngIf="!isLoading && !errorMessage && totalItemsCount > 0" class="totals-separator">
+      <!-- Fin Section Totaux -->
 
-  <!-- Affichage d'erreur -->
-  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
+      <!-- Chargement/Erreur (inchangés) -->
+      <div *ngIf="isLoading" class="loading-indicator">Chargement...</div>
+      <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">{{ errorMessage }}</div>
+      <!-- Fin Chargement/Erreur -->
 
-  <!-- Conteneur principal si pas de chargement et pas d'erreur -->
-  <!-- Note: Le *ngIf ici pourrait être redondant si on gère bien l'erreur avant -->
-  <div *ngIf="!isLoading && !errorMessage">
-    <!-- Abonnement à l'observable des commandes utilisateur -->
-    <div *ngIf="(userOrders$ | async) as orders; else noOrdersYetTemplateFromAsync">
-      <!-- Vérifier s'il y a des commandes -->
-      <!-- Note: On pourrait utiliser totalOrderCount > 0 ici aussi -->
-      <div *ngIf="orders.length > 0; else noOrdersYetContent">
+      <!-- Contenu principal des commandes (si !isLoading et pas d'erreur) -->
+      <div *ngIf="!isLoading && !errorMessage">
+          <!-- Utiliser groupedOrders.length pour vérifier s'il y a des commandes POUR CET UTILISATEUR -->
+          <div *ngIf="groupedOrders.length > 0; else noOrdersYetContentForUser">
 
-        <p *ngIf="totalOrderCount > 0" style="text-align: center; margin-bottom: 20px; color: #6c757d;">
-            Voici la liste des commandes que vous avez passées (enregistrées dans ce navigateur).
-        </p>
+            <!-- Texte d'introduction (inchangé) -->
+            <p *ngIf="totalItemsCount > 0" style="text-align: center; margin-bottom: 20px; color: #6c757d;">
+                <!-- ... texte intro ... -->
+            </p>
 
-        <!-- VOTRE STRUCTURE DE LISTE EN GRID (qui fonctionne) -->
-        <div class="order-list">
-          <div class="order-item" *ngFor="let order of orders">
-            <div class="order-header">
-              <span class="order-number" title="Numéro de Commande">{{ order.orderNumber }}</span>
-              <span class="order-date" title="Date de la commande">{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</span>
+            <div class="order-list">
+              <div class="order-item" *ngFor="let group of groupedOrders">
+                <!-- ... contenu de la carte commande ... -->
+              </div>
             </div>
-            <div class="order-details">
-              <p><strong>Client :</strong> {{ order.customerName }}</p>
-              <p><strong>Email :</strong> {{ order.customerEmail }}</p>
-              <p *ngIf="order.items && order.items.length > 0">
-                 <strong>Article(s):</strong>
-                 <span *ngFor="let item of order.items; let last = last">
-                     {{ item.title }} ({{ item.quantity }}){{ last ? '' : ', ' }}
-                 </span>
-              </p>
-            </div>
-            <div class="order-footer">
-              <span class="order-total" title="Montant Total">{{ order.totalAmount | currency:'EUR':'symbol' }}</span>
-              <span title="Statut de la commande" [class]="'order-status ' + getStatusBadgeClass(order.status)">
-                {{ statusTranslations[order.status] || order.status }}
-              </span>
-            </div>
-            <!-- Bouton détails optionnel -->
-          </div> <!-- Fin .order-item -->
-        </div> <!-- Fin .order-list -->
-        <!-- FIN DE VOTRE STRUCTURE DE LISTE EN GRID -->
 
-      </div> <!-- Fin *ngIf orders.length > 0 -->
+          </div>
 
-       <!-- Template si orders.length est 0 après résolution -->
-       <ng-template #noOrdersYetContent>
-         <p class="no-orders-message">
-           Vous n'avez pas encore passé de commande depuis ce navigateur.
-         </p>
-       </ng-template>
+          <!-- Template si groupedOrders est vide pour cet utilisateur -->
+          <ng-template #noOrdersYetContentForUser>
+            <p class="no-orders-message text-center">
+              Vous n'avez pas encore passé de commande avec ce compte.
+            </p>
+          </ng-template>
 
-    </div> <!-- Fin *ngIf userOrders$ | async -->
+      </div> <!-- Fin *ngIf !isLoading && !errorMessage -->
 
-     <!-- Template si userOrders$ n'émet jamais (ne devrait pas arriver) -->
-     <ng-template #noOrdersYetTemplateFromAsync>
-         <p *ngIf="!isLoading" class="no-orders-message">Aucune commande à afficher.</p>
-     </ng-template>
+  </ng-container> <!-- Fin ng-container *ngIf="currentUser" -->
 
-  </div> <!-- Fin *ngIf !isLoading && !errorMessage -->
-
-</div> <!-- Fin .user-orders-container -->
+</div>

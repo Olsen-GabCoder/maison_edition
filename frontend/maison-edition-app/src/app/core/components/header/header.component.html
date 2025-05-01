@@ -1,21 +1,34 @@
 <!-- src/app/core/components/header/header.component.html -->
 <header class="app-header">
-    <div class="header-container">
-      <div class="logo-container">
-        <!-- Lien sur le logo/titre pour revenir à l'accueil -->
-        <a routerLink="/" class="logo-link">
-          <h1>Ma Maison d'Édition</h1>
-        </a>
-      </div>
-      <nav class="main-navigation">
-        <!-- Lien Accueil -->
-        <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
-        <!-- Lien Contact -->
-        <a routerLink="/contact" routerLinkActive="active-link">Contact</a>
-        <!-- Lien vers la section Admin -->
-        <a routerLink="/admin/login" routerLinkActive="active-link">Admin</a>
-        <!-- Lien vers la page de connexion Admin -->
-        <a routerLink="/my-orders" routerLinkActive="active">Mes Commandes</a>
-      </nav>
+  <div class="header-container">
+    <div class="logo-container">
+      <!-- Lien sur le logo/titre pour revenir à l'accueil -->
+      <a routerLink="/" class="logo-link">
+        <h1>Ma Maison d'Édition</h1>
+      </a>
     </div>
+    <nav class="main-navigation">
+      <!-- Lien Accueil -->
+      <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
+      <!-- Lien Contact -->
+      <a routerLink="/contact" routerLinkActive="active-link">Contact</a>
+
+      <!-- === Section Authentification Utilisateur === -->
+      <ng-container *ngIf="(currentUser$ | async) as user; else loggedOutUser">
+        <!-- Utilisateur CONNECTÉ -->
+        <a routerLink="/my-orders" routerLinkActive="active-link">Mes Commandes</a>
+        <!-- Optionnel: Lien vers une future page "Mon Compte" -->
+        <!-- <a routerLink="/account" routerLinkActive="active-link">Mon Compte</a> -->
+        <span class="user-greeting ms-2 me-1"></span> <!-- Message simple ou user.email -->
+        <button class="btn btn-link btn-logout p-0" (click)="logoutUser()" title="Déconnexion">Déconnexion</button>
+      </ng-container>
+
+      <ng-template #loggedOutUser>
+        <!-- Utilisateur DÉCONNECTÉ -->
+        <!-- Le lien Mes Commandes est caché ici, mais tu pourrais le laisser et la page redirigerait vers login -->
+        <a routerLink="/login" routerLinkActive="active-link">Connexion</a>
+      </ng-template>
+      <!-- === Fin Section Authentification Utilisateur === -->
+    </nav>
+  </div>
 </header>

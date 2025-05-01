@@ -3,6 +3,20 @@
 <section class="hero-section">
   <h1>Bienvenue chez EditApp</h1>
   <p>Votre source de lecture...</p>
+  
+  <!-- Barre de recherche dans la section hero -->
+  <div class="search-container">
+    <input 
+      type="text" 
+      class="search-input" 
+      [(ngModel)]="searchTerm" 
+      (input)="onSearchChange()" 
+      placeholder="Rechercher un livre..."
+    >
+    <button class="search-button" (click)="onSearchChange()">
+      <i class="search-icon">🔍</i>
+    </button>
+  </div>
 </section>
 
 <!-- Section des livres -->
@@ -18,9 +32,9 @@
   <div *ngIf="(books$ | async) as books; else loadingOrError">
 
     <!-- Afficher la grille de livres si le tableau n'est pas vide -->
-    <div class="book-list" *ngIf="books.length > 0; else noBooks">
+    <div class="book-list" *ngIf="filteredBooks.length > 0; else noBooks">
       <!-- Boucler sur chaque livre -->
-      <div class="book-item" *ngFor="let book of books">
+      <div class="book-item" *ngFor="let book of filteredBooks">
 
         <!-- === Section pour la couverture (utilise book.coverUrl) === -->
         <div class="book-cover">
@@ -63,7 +77,10 @@
 
     <!-- Template affiché si la liste 'books' est vide -->
     <ng-template #noBooks>
-      <p class="no-books-message alert alert-info">Aucun livre à afficher pour le moment.</p>
+      <p class="no-books-message alert alert-info">
+        <span *ngIf="searchTerm">Aucun livre ne correspond à votre recherche "{{ searchTerm }}".</span>
+        <span *ngIf="!searchTerm">Aucun livre à afficher pour le moment.</span>
+      </p>
     </ng-template>
 
   </div> <!-- Fin *ngIf async -->

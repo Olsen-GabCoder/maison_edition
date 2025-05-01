@@ -1,6 +1,6 @@
 // src/app/core/services/book.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Book } from '../../models/book.model';
 
@@ -23,38 +23,50 @@ export class BookService {
     // Initialiser nextId basé sur les livres chargés
     const currentBooks = this.booksSubject.getValue();
     this.nextId = this.calculateNextId(currentBooks);
-    console.log(`[BookService] Initialisé. Source de données: localStorage ('${BOOKS_STORAGE_KEY}'). Prochain ID: ${this.nextId}`);
+    console.log(`[BookService] Initialisé. Source de données: ${this.isLocalStorageAvailable() ? `localStorage ('${BOOKS_STORAGE_KEY}')` : 'mémoire'}. Prochain ID: ${this.nextId}`);
   }
 
   /**
-   * Charge les livres depuis localStorage ou utilise les mocks si vide/erreur.
+   * Vérifie si localStorage est disponible dans l'environnement actuel.
+   */
+  private isLocalStorageAvailable(): boolean {
+    try {
+      return typeof window !== 'undefined' && window.localStorage != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Charge les livres depuis localStorage si disponible, sinon utilise les mocks.
    */
   private loadInitialBooks(): Book[] {
-    console.log(`[BookService] loadInitialBooks: Lecture depuis localStorage ('${BOOKS_STORAGE_KEY}').`);
-    try {
-      const storedBooks = localStorage.getItem(BOOKS_STORAGE_KEY);
-      if (storedBooks) {
-        // IMPORTANT: Assurez-vous que les données stockées sont valides
-        const books: Book[] = JSON.parse(storedBooks);
-        // Validation basique (vérifier si c'est un tableau)
-        if (Array.isArray(books)) {
-           console.log(`[BookService] loadInitialBooks: ${books.length} livres chargés depuis localStorage.`);
-           return books;
+    console.log(`[BookService] loadInitialBooks: Tentative de lecture depuis localStorage ('${BOOKS_STORAGE_KEY}').`);
+    if (this.isLocalStorageAvailable()) {
+      try {
+        const storedBooks = localStorage.getItem(BOOKS_STORAGE_KEY);
+        if (storedBooks) {
+          const books: Book[] = JSON.parse(storedBooks);
+          if (Array.isArray(books)) {
+            console.log(`[BookService] loadInitialBooks: ${books.length} livres chargés depuis localStorage.`);
+            return books;
+          } else {
+            console.warn('[BookService] loadInitialBooks: Données invalides trouvées dans localStorage. Utilisation des mocks.');
+            localStorage.removeItem(BOOKS_STORAGE_KEY); // Nettoyer les données invalides
+            return this.getInitialMockBooks();
+          }
         } else {
-           console.warn('[BookService] loadInitialBooks: Données invalides trouvées dans localStorage. Utilisation des mocks.');
-           localStorage.removeItem(BOOKS_STORAGE_KEY); // Nettoyer les données invalides
-           return this.getInitialMockBooks();
+          console.log('[BookService] loadInitialBooks: localStorage vide. Utilisation des mocks initiaux.');
+          const mockBooks = this.getInitialMockBooks();
+          this.saveBooksToStorage(mockBooks); // Sauvegarder les mocks initiaux pour la première fois
+          return mockBooks;
         }
-      } else {
-        console.log('[BookService] loadInitialBooks: localStorage vide. Utilisation des mocks initiaux.');
-        const mockBooks = this.getInitialMockBooks();
-        // Sauvegarder les mocks initiaux pour la première fois
-        this.saveBooksToStorage(mockBooks);
-        return mockBooks;
+      } catch (e) {
+        console.error('[BookService] Erreur lecture/parsing localStorage:', e);
+        return this.getInitialMockBooks();
       }
-    } catch (e) {
-      console.error('[BookService] Erreur lecture/parsing localStorage:', e);
-      // En cas d'erreur, revenir aux mocks par sécurité
+    } else {
+      console.log('[BookService] loadInitialBooks: localStorage non disponible. Utilisation des mocks initiaux.');
       return this.getInitialMockBooks();
     }
   }
@@ -69,22 +81,26 @@ export class BookService {
     ];
   }
 
-  /** Sauvegarde la liste complète des livres dans localStorage */
+  /** Sauvegarde la liste complète des livres dans localStorage si disponible */
   private saveBooksToStorage(books: Book[]): void {
-    try {
-      // Trier par ID avant sauvegarde pour la cohérence (optionnel)
-      const sortedBooks = [...books].sort((a, b) => a.id - b.id);
-      localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(sortedBooks));
-      console.log(`[BookService] saveBooksToStorage: ${sortedBooks.length} livres sauvegardés ('${BOOKS_STORAGE_KEY}').`);
-    } catch (e) {
-      console.error('[BookService] saveBooksToStorage: Erreur écriture localStorage:', e);
-      // Gérer l'erreur (par exemple, notifier l'utilisateur que la sauvegarde a échoué)
+    if (this.isLocalStorageAvailable()) {
+      try {
+        const sortedBooks = [...books].sort((a, b) => a.id - b.id);
+        localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(sortedBooks));
+        console.log(`[BookService] saveBooksToStorage: ${sortedBooks.length} livres sauvegardés ('${BOOKS_STORAGE_KEY}').`);
+      } catch (e) {
+        console.error('[BookService] saveBooksToStorage: Erreur écriture localStorage:', e);
+        // Gérer l'erreur (par exemple, notifier l'utilisateur que la sauvegarde a échoué)
+      }
+    } else {
+      console.warn('[BookService] saveBooksToStorage: localStorage non disponible. Les données ne seront pas persistées.');
+      // Ici, tu pourrais implémenter une autre stratégie de persistance si nécessaire
     }
   }
 
   /** Calcule le prochain ID disponible (méthode simple pour mocks) */
   private calculateNextId(books: Book[]): number {
-     return books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
+    return books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
   }
 
   // --- Méthodes Publiques ---
