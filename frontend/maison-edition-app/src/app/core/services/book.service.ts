@@ -34,23 +34,27 @@ export class BookService {
     try {
       const storedBooks = localStorage.getItem(BOOKS_STORAGE_KEY);
       if (storedBooks) {
+        // IMPORTANT: Assurez-vous que les données stockées sont valides
         const books: Book[] = JSON.parse(storedBooks);
+        // Validation basique (vérifier si c'est un tableau)
         if (Array.isArray(books)) {
            console.log(`[BookService] loadInitialBooks: ${books.length} livres chargés depuis localStorage.`);
            return books;
         } else {
            console.warn('[BookService] loadInitialBooks: Données invalides trouvées dans localStorage. Utilisation des mocks.');
-           localStorage.removeItem(BOOKS_STORAGE_KEY);
+           localStorage.removeItem(BOOKS_STORAGE_KEY); // Nettoyer les données invalides
            return this.getInitialMockBooks();
         }
       } else {
         console.log('[BookService] loadInitialBooks: localStorage vide. Utilisation des mocks initiaux.');
         const mockBooks = this.getInitialMockBooks();
+        // Sauvegarder les mocks initiaux pour la première fois
         this.saveBooksToStorage(mockBooks);
         return mockBooks;
       }
     } catch (e) {
       console.error('[BookService] Erreur lecture/parsing localStorage:', e);
+      // En cas d'erreur, revenir aux mocks par sécurité
       return this.getInitialMockBooks();
     }
   }
@@ -61,17 +65,20 @@ export class BookService {
       { id: 1, title: 'Le Seigneur des Anneaux', author: 'J.R.R. Tolkien', coverUrl: 'assets/images/sda.jpg', summary: 'Un grand classique...', price: 29.95, category: 'Fantasy' },
       { id: 2, title: 'Fondation', author: 'Isaac Asimov', coverUrl: 'assets/images/fondation.jpg', summary: 'La chute de l\'Empire...', price: 19.90, category: 'Science-Fiction' },
       { id: 3, title: 'Dune', author: 'Frank Herbert', coverUrl: 'assets/images/dune.jpg', summary: 'L\'épice doit couler...', price: 22.50, category: 'Science-Fiction' }
+      // Ajoutez d'autres livres mock si nécessaire
     ];
   }
 
   /** Sauvegarde la liste complète des livres dans localStorage */
   private saveBooksToStorage(books: Book[]): void {
     try {
+      // Trier par ID avant sauvegarde pour la cohérence (optionnel)
       const sortedBooks = [...books].sort((a, b) => a.id - b.id);
       localStorage.setItem(BOOKS_STORAGE_KEY, JSON.stringify(sortedBooks));
       console.log(`[BookService] saveBooksToStorage: ${sortedBooks.length} livres sauvegardés ('${BOOKS_STORAGE_KEY}').`);
     } catch (e) {
       console.error('[BookService] saveBooksToStorage: Erreur écriture localStorage:', e);
+      // Gérer l'erreur (par exemple, notifier l'utilisateur que la sauvegarde a échoué)
     }
   }
 
@@ -87,34 +94,23 @@ export class BookService {
     return this.books$;
   }
 
-  // === MODIFICATION ICI ===
-  /**
-   * Récupère un livre spécifique par son ID avec logs de débogage.
-   * @param id - L'ID numérique du livre à récupérer.
-   * @returns Observable<Book | undefined> - Un observable émettant le livre trouvé ou undefined.
-   */
   getBookById(id: number): Observable<Book | undefined> {
-    console.log(`[BookService] getBookById(${id}): Début.`); // Log début
+    console.log(`[BookService] Tentative de récupération du livre ID: ${id}`);
     return this.books$.pipe(
-      tap(books => console.log(`[BookService] getBookById(${id}): books$ a émis ${books.length} livres.`)), // Log émission source
-      map(books => {
-          const found = books.find(book => book.id === id);
-          // ---> Log CRUCIAL ICI <---
-          console.log(`[BookService] getBookById(${id}): map() a trouvé:`, found ? 'Oui, objet book trouvé.' : 'Non, aucun livre avec cet ID.');
-          return found;
-      }),
-      tap(foundBook => console.log(`[BookService] getBookById(${id}): TAP final après map. Valeur émise:`, foundBook)) // Log après map
+      map(books => books.find(book => book.id === id)),
+      tap(foundBook => console.log(`[BookService] Livre trouvé pour ID ${id}:`, foundBook ? 'Oui' : 'Non'))
     );
   }
-  // === FIN MODIFICATION ===
 
   addBook(newBookData: Omit<Book, 'id'>): Observable<Book> {
     console.log('[BookService] Tentative ajout livre:', newBookData.title);
     const currentBooks = this.booksSubject.getValue();
-    const newBook: Book = { ...newBookData, id: this.nextId++ };
+    const newBook: Book = { ...newBookData, id: this.nextId++ }; // Assigner et incrémenter nextId
     const updatedBooks = [...currentBooks, newBook];
-    this.booksSubject.next(updatedBooks);
-    this.saveBooksToStorage(updatedBooks);
+
+    this.booksSubject.next(updatedBooks); // Mettre à jour le sujet en mémoire
+    this.saveBooksToStorage(updatedBooks); // <-- SAUVEGARDER DANS LOCALSTORAGE
+
     console.log('[BookService] Livre ajouté ID:', newBook.id);
     return of(newBook);
   }
@@ -127,11 +123,13 @@ export class BookService {
     if (indexToUpdate !== -1) {
       const updatedBooks = [
         ...currentBooks.slice(0, indexToUpdate),
-        updatedBookData,
+        updatedBookData, // Le livre mis à jour
         ...currentBooks.slice(indexToUpdate + 1)
       ];
-      this.booksSubject.next(updatedBooks);
-      this.saveBooksToStorage(updatedBooks);
+
+      this.booksSubject.next(updatedBooks); // Mettre à jour le sujet
+      this.saveBooksToStorage(updatedBooks); // <-- SAUVEGARDER DANS LOCALSTORAGE
+
       console.log(`[BookService] Livre ID: ${updatedBookData.id} mis à jour.`);
       return of(updatedBookData);
     } else {
@@ -146,8 +144,9 @@ export class BookService {
     const updatedBooks = currentBooks.filter(book => book.id !== id);
 
     if (updatedBooks.length < currentBooks.length) {
-      this.booksSubject.next(updatedBooks);
-      this.saveBooksToStorage(updatedBooks);
+      this.booksSubject.next(updatedBooks); // Mettre à jour le sujet
+      this.saveBooksToStorage(updatedBooks); // <-- SAUVEGARDER DANS LOCALSTORAGE
+
       console.log(`[BookService] Livre ID: ${id} supprimé.`);
       return of(true);
     } else {
