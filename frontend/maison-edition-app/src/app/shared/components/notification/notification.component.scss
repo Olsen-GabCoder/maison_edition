@@ -1,76 +1,100 @@
-/* src/app/shared/components/notification/notification.component.scss */
 .notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1050; /* Au-dessus de la plupart des éléments */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
-    width: 350px; /* Ajustez la largeur selon vos besoins */
-  }
-  
+  position: fixed; /* Pour rester visible lors du défilement */
+  top: 20px;      /* Ajustez la distance depuis le haut */
+  right: 20px;    /* Ajustez la distance depuis la droite */
+  z-index: 1050;  /* Au-dessus de la plupart des éléments (comme les modales par défaut) */
+  width: 350px;   /* Largeur raisonnable pour les notifications */
+  max-width: 90vw; /* Pour s'adapter aux petits écrans */
+  display: flex;
+  flex-direction: column; /* Empile les notifications verticalement */
+  gap: 0.75rem;    /* Espacement entre les notifications */
+  align-items: flex-end; /* Alignement à droite (ou à la fin) */
+
+  /* Styles pour chaque notification individuelle */
   .alert {
-    margin-bottom: 0; /* Supprimer la marge par défaut des alertes Bootstrap */
-  }
-  
-  .alert-dismissible {
-    padding-right: 2.5rem;
-  }
-  
-  .btn-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 0.75rem 1rem;
-    color: inherit;
-    background: transparent;
-    border: 0;
-    opacity: 0.5;
-  
-    &:hover {
-      opacity: 0.75;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    opacity: 0; /* Initialement invisible pour l'animation */
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transform: translateY(-20px); /* Commence légèrement au-dessus */
+
+    &.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Styles spécifiques pour les types de notifications (basés sur getCssClass) */
+    &.alert-success {
+      background-color: #d1e7dd;
+      color: #198754;
+      border-color: #badbcc;
+      .btn-close {
+        color: #198754;
+      }
+    }
+
+    &.alert-info {
+      background-color: #cff4fc;
+      color: #0dcaf0;
+      border-color: #b6effb;
+      .btn-close {
+        color: #0dcaf0;
+      }
+    }
+
+    &.alert-warning {
+      background-color: #fff3cd;
+      color: #664d03;
+      border-color: #ffecb5;
+      .btn-close {
+        color: #664d03;
+      }
+    }
+
+    &.alert-danger {
+      background-color: #f8d7da;
+      color: #842029;
+      border-color: #f5c2c7;
+      .btn-close {
+        color: #842029;
+      }
+    }
+
+    /* Style pour l'icône */
+    i {
+      font-size: 1.1rem;
+    }
+
+    /* Style pour le bouton de fermeture */
+    .btn-close {
+      opacity: 0.7;
+      &:hover {
+        opacity: 1;
+      }
     }
   }
-  
-  .alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
+
+  /* Animation d'apparition/disparition (correspond à [@fadeInOut] dans le HTML) */
+  &.ng-animating {
+    .alert {
+      &.ng-enter {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      &.ng-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+      }
+      &.ng-leave {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      &.ng-leave-active {
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+      }
+    }
   }
-  
-  .alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-  }
-  
-  .alert-info {
-    background-color: #e7f5fe;
-    border-color: #cce5df;
-    color: #0c5460;
-  }
-  
-  .alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-    color: #85640a;
-  }
-  
-  .alert-secondary {
-    background-color: #e2e3e5;
-    border-color: #d1d3d5;
-    color: #383d41;
-  }
-  
-  .me-2 {
-    margin-right: 0.5rem;
-  }
-  
-  /* Correction du chemin @import (à adapter selon la structure réelle de ton projet) */
-  /* Si ton fichier variables.scss est directement dans le dossier 'styles' : */
-  /* @import '../../../../styles/variables'; */
-  
-  /* Si tu utilises @use (recommandé) : */
-  /* @use '../../../../styles/variables' as var; */
+}

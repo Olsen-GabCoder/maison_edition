@@ -3,12 +3,18 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Observable, of, Subject, switchMap, tap, catchError, takeUntil } from 'rxjs';
-import { Book } from '../../../../models/book.model';                       // Vérifiez chemin
-import { BookService } from '../../../../core/services/book.service';           // Vérifiez chemin
-import { OrderService } from '../../../../core/services/order.service';         // Vérifiez chemin
-import { Address } from '../../../../models/address.model';                   // Vérifiez chemin
-import { NotificationService } from '../../../../core/services/notification.service'; // <<<=== VÉRIFIEZ CE CHEMIN
+import { Observable, of, Subject, switchMap, tap, catchError, takeUntil, finalize } from 'rxjs'; // finalize est déjà là
+
+// Models
+import { Book } from '../../../../models/book.model';
+import { Address } from '../../../../models/address.model';
+import { CartItem } from '../../../../models/cart-item.model';
+
+// Services
+import { BookService } from '../../../../core/services/book.service';
+import { OrderService } from '../../../../core/services/order.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-direct-order',
@@ -26,38 +32,26 @@ export class DirectOrderComponent implements OnInit, OnDestroy {
   private bookService = inject(BookService);
   private orderService = inject(OrderService);
   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
 
   // --- Gestion Désinscription ---
   private destroy$ = new Subject<void>();
 
   // --- Propriétés du Composant ---
-  orderForm: FormGroup;
-  selectedBook$: Observable<Book | null | undefined> = of(null);
+  orderForm!: FormGroup;
   selectedBookData: Book | null = null;
 
   // --- États UI ---
   isLoadingBook: boolean = true;
+  isLoadingUser: boolean = true;
   isSubmitting: boolean = false;
   errorMessage: string | null = null;
 
-  constructor() {
-    console.log('[DirectOrderComponent] Constructor: Initialisation du formulaire.');
-    this.orderForm = this.fb.group({
-      customerName: ['', Validators.required],
-      customerEmail: ['', [Validators.required, Validators.email]],
-      customerId: [''],
-      shippingAddress: this.fb.group({
-        street: ['', Validators.required],
-        zipCode: ['', Validators.required],
-        city: ['', Validators.required],
-        country: ['', Validators.required]
-      })
-    });
-  }
-
   ngOnInit(): void {
     console.log('[DirectOrderComponent] ngOnInit: Début.');
+    this.initializeForm();
     this.loadBookDetails();
+    this.loadUserDataAndPreFillForm();
   }
 
   ngOnDestroy(): void {
@@ -66,8 +60,46 @@ export class DirectOrderComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /** Initialise le formulaire réactif */
+  private initializeForm(): void {
+     console.log('[DirectOrderComponent] Initialisation du formulaire.');
+     this.orderForm = this.fb.group({
+       customerName: ['', Validators.required],
+       customerEmail: ['', [Validators.required, Validators.email]],
+       customerId: [''], // Optionnel
+       shippingAddress: this.fb.group({
+         street: ['', Validators.required],
+         zipCode: ['', Validators.required],
+         city: ['', Validators.required],
+         country: ['', Validators.required]
+       })
+     });
+   }
+
+   /** Charge les données utilisateur et pré-remplit le formulaire */
+  private loadUserDataAndPreFillForm(): void {
+      this.isLoadingUser = true;
+      this.authService.currentUser$.pipe(
+          takeUntil(this.destroy$),
+          tap(user => console.log('[DirectOrderComponent] User data received:', user)),
+          finalize(() => this.isLoadingUser = false)
+      ).subscribe(user => {
+          if (user) {
+              this.orderForm.patchValue({
+                  customerName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || '',
+                  customerEmail: user.email
+              });
+              console.log('[DirectOrderComponent] Formulaire pré-rempli avec données utilisateur.');
+          } else {
+               console.warn('[DirectOrderComponent] Impossible de pré-remplir: utilisateur non trouvé.');
+          }
+      });
+  }
+
+
+  /** Charge les détails du livre depuis l'ID dans l'URL */
   loadBookDetails(): void {
-    console.log('[DirectOrderComponent] loadBookDetails: DÉBUT. isLoadingBook = true.');
+    console.log('[DirectOrderComponent] loadBookDetails: DÉBUT.');
     this.isLoadingBook = true;
     this.errorMessage = null;
     this.selectedBookData = null;
@@ -78,54 +110,76 @@ export class DirectOrderComponent implements OnInit, OnDestroy {
         const bookIdParam = params.get('bookId');
         console.log(`[DirectOrderComponent] loadBookDetails: bookIdParam = ${bookIdParam}`);
         if (!bookIdParam) {
-          this.errorMessage = "ID du livre manquant pour la commande.";
-          this.isLoadingBook = false; return of(null);
+            this.handleLoadingError("ID du livre manquant pour la commande.");
+            return of(null);
         }
         const bookId = parseInt(bookIdParam, 10);
         if (isNaN(bookId)) {
-          this.errorMessage = "ID du livre invalide.";
-          this.isLoadingBook = false; return of(null);
+            this.handleLoadingError("ID du livre invalide.");
+            return of(null);
         }
         console.log(`[DirectOrderComponent] loadBookDetails: Appel de bookService.getBookById(${bookId})`);
-        return this.bookService.getBookById(bookId);
+        return this.bookService.getBookById(bookId).pipe(
+           catchError(err => {
+              console.error('[DirectOrderComponent] Erreur getBookById:', err);
+              this.handleLoadingError("Erreur lors du chargement des détails du livre.");
+              return of(null);
+           })
+        );
       }),
-      tap(book => {
-        console.log('[DirectOrderComponent] loadBookDetails: TAP exécuté. Valeur reçue:', book);
-        if (!book) {
-          this.errorMessage = "Le livre sélectionné n'a pas été trouvé.";
-          this.selectedBookData = null;
+      tap(bookOrNull => {
+        console.log('[DirectOrderComponent] loadBookDetails: TAP après switchMap. Valeur reçue:', bookOrNull);
+        if (bookOrNull) {
+          this.selectedBookData = bookOrNull;
+          console.log('[DirectOrderComponent] Livre trouvé et stocké:', this.selectedBookData.title);
         } else {
-          this.selectedBookData = book;
+          if (!this.errorMessage) {
+             this.handleLoadingError("Le livre sélectionné n'a pas été trouvé.");
+          }
+          this.selectedBookData = null;
         }
         this.isLoadingBook = false;
-        console.log('[DirectOrderComponent] loadBookDetails: <<< isLoadingBook mis à false (TAP) >>>');
-      }),
-      catchError(err => {
-        console.error('[DirectOrderComponent] loadBookDetails: CATCHERROR exécuté.', err);
-        this.errorMessage = "Erreur lors du chargement des détails du livre.";
-        this.selectedBookData = null;
-        this.isLoadingBook = false;
-        console.log('[DirectOrderComponent] loadBookDetails: <<< isLoadingBook mis à false (CATCHERROR) >>>');
-        return of(null);
+        console.log('[DirectOrderComponent] loadBookDetails: <<< isLoadingBook mis à false >>>');
       })
     ).subscribe({
-        next: (bookOrNull) => console.log('[DirectOrderComponent] loadBookDetails: SUBSCRIBE next.'),
-        error: (err) => console.error('[DirectOrderComponent] loadBookDetails: SUBSCRIBE error.', err)
+        next: () => console.log('[DirectOrderComponent] loadBookDetails: SUIVI de l\'observable terminé pour ce cycle.'),
+        error: (err) => console.error('[DirectOrderComponent] loadBookDetails: Erreur non interceptée (ne devrait pas arriver):', err)
     });
   }
 
+  /** Helper pour gérer les erreurs de chargement */
+  private handleLoadingError(message: string): void {
+      console.error(`[DirectOrderComponent] Erreur chargement: ${message}`);
+      this.errorMessage = message;
+      this.isLoadingBook = false;
+      this.selectedBookData = null;
+  }
+
+  /** Gère la soumission du formulaire de commande */
   onSubmit(): void {
     console.log('[DirectOrderComponent] onSubmit: Début de la soumission.');
+    this.errorMessage = null;
 
-    if (this.orderForm.invalid || !this.selectedBookData || this.isSubmitting) {
-       console.warn('[DirectOrderComponent] onSubmit: Conditions non remplies.');
-       if(this.orderForm.invalid) this.orderForm.markAllAsTouched();
-       if(!this.selectedBookData) this.errorMessage = "Livre non chargé.";
+    // --- Vérifications avant soumission ---
+    if (this.orderForm.invalid) {
+       console.warn('[DirectOrderComponent] onSubmit: Formulaire invalide.');
+       this.orderForm.markAllAsTouched();
+       this.notificationService.showError("Veuillez corriger les erreurs dans le formulaire.");
        return;
     }
+    if (!this.selectedBookData) {
+        console.error('[DirectOrderComponent] onSubmit: Impossible de soumettre, selectedBookData est null.');
+        this.errorMessage = "Les données du livre n'ont pas pu être chargées. Impossible de commander.";
+        this.notificationService.showError(this.errorMessage);
+       return;
+    }
+    if (this.isSubmitting) {
+        console.warn('[DirectOrderComponent] onSubmit: Soumission déjà en cours.');
+        return;
+    }
+    // --- Fin Vérifications ---
 
     this.isSubmitting = true;
-    this.errorMessage = null;
 
     const orderPayload = {
       customerName: this.orderForm.value.customerName,
@@ -134,40 +188,42 @@ export class DirectOrderComponent implements OnInit, OnDestroy {
       shippingAddress: this.orderForm.value.shippingAddress as Address
     };
 
-    console.log('[DirectOrderComponent] onSubmit: Appel de orderService.addOrder...');
+    const cartItemForOrder: CartItem[] = [{
+        bookId: this.selectedBookData.id,
+        quantity: 1,
+        title: this.selectedBookData.title,
+        price: this.selectedBookData.price,
+        coverUrl: this.selectedBookData.coverUrl
+    }];
 
-    this.orderService.addOrder(orderPayload, this.selectedBookData)
-        .pipe(takeUntil(this.destroy$))
+    console.log('[DirectOrderComponent] onSubmit: Appel de orderService.addOrder avec:', orderPayload, cartItemForOrder);
+
+    this.orderService.addOrder(orderPayload, cartItemForOrder)
+        .pipe(
+            takeUntil(this.destroy$),
+            finalize(() => this.isSubmitting = false)
+        )
         .subscribe({
             next: (createdOrder) => {
                 console.log('[DirectOrderComponent] onSubmit: SUCCÈS de addOrder:', createdOrder);
-                this.isSubmitting = false;
-
-                // === CORRECTION DE L'APPEL NOTIFICATION ===
-                // Appel avec seulement le message (1er argument string)
                 this.notificationService.showSuccess(
                     `Commande ${createdOrder.orderNumber} passée avec succès !`
-                    // PAS de 2ème argument ici, car il attend un nombre (duration)
-                    // Si vous voulez une durée : , 5000
                 );
-                // === FIN CORRECTION ===
-
-                console.log('[DirectOrderComponent] onSubmit: Réinitialisation formulaire et redirection...');
+                console.log('[DirectOrderComponent] onSubmit: Réinitialisation formulaire et redirection vers l\'accueil...');
                 this.orderForm.reset();
+                // ===> MODIFICATION : Rediriger vers la page d'accueil ('/') <===
                 setTimeout(() => { this.router.navigate(['/']); }, 1500);
             },
             error: (err) => {
                  console.error('[DirectOrderComponent] onSubmit: ERREUR de addOrder:', err);
-                 this.isSubmitting = false;
-                 const errorMsg = `Erreur: ${err?.message || 'Impossible de créer la commande.'}`;
+                 const errorMsg = `Erreur lors de la commande: ${err?.message || 'Une erreur inconnue est survenue.'}`;
                  this.errorMessage = errorMsg;
-                 // Optionnel: Notification d'erreur (vérifier la signature de showError aussi)
-                 // this.notificationService.showError(errorMsg);
+                 this.notificationService.showError(errorMsg);
             }
      });
   }
 
-  // --- Getters ---
+  // --- Getters pour accès facile aux contrôles de formulaire ---
   get customerName() { return this.orderForm.get('customerName'); }
   get customerEmail() { return this.orderForm.get('customerEmail'); }
   get shippingAddressGroup() { return this.orderForm.get('shippingAddress') as FormGroup; }
@@ -175,4 +231,5 @@ export class DirectOrderComponent implements OnInit, OnDestroy {
   get zipCode() { return this.shippingAddressGroup.get('zipCode'); }
   get city() { return this.shippingAddressGroup.get('city'); }
   get country() { return this.shippingAddressGroup.get('country'); }
+  // ------------------------------------------------------------
 }

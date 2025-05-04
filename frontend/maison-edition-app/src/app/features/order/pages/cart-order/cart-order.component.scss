@@ -1,0 +1,399 @@
+// src/app/features/order/pages/cart-order/cart-order.component.scss
+@use "sass:color"; // <-- AJOUTÉ: Importer le module color
+@use "sass:math"; // <-- AJOUTÉ: Importer le module math
+
+// STYLE AUTONOME - SANS BOOTSTRAP
+
+// --- Variables (Personnalisables) ---
+$primary-color: #007bff; // Un bleu primaire standard
+$success-color: #28a745; // Un vert succès
+$danger-color: #dc3545; // Un rouge danger
+$warning-color: #ffc107; // Un jaune avertissement
+$secondary-color: #6c757d; // Un gris secondaire
+$light-grey: #f8f9fa;     // Un gris très clair pour les fonds
+$dark-grey: #343a40;      // Un gris foncé pour le texte principal
+$body-color: $dark-grey; // <-- AJOUTÉ: Définition de la variable manquante
+$border-color: #dee2e6;   // Couleur de bordure standard
+// $text-muted-color: lighten($secondary-color, 15%); // Texte discret <-- ANCIEN
+$text-muted-color: color.adjust($secondary-color, $lightness: 15%); // <-- CORRIGÉ
+
+$base-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$base-font-size: 1rem; // 16px par défaut
+$base-line-height: 1.5;
+$base-spacing: 1rem;   // Unité d'espacement
+
+$border-radius: 0.3rem; // Rayon de bordure
+$card-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1); // Ombre pour les cartes
+$border-radius-lg: 0.5rem; // Ajouté pour le bouton (à adapter si besoin)
+$transition-base: all .2s ease-in-out; // Ajouté pour le bouton (à adapter si besoin)
+
+// --- Reset / Base (Optionnel mais utile sans framework) ---
+* {
+  box-sizing: border-box;
+}
+
+// --- Conteneur Principal ---
+.order-page-container {
+  max-width: 1140px; // Largeur max comme un container Bootstrap
+  margin-left: auto;
+  margin-right: auto;
+  // padding: ($base-spacing * 1.5) ($base-spacing * 1); // Padding vertical/horizontal <-- ANCIEN (parentheses inutiles)
+  padding: $base-spacing * 1.5 $base-spacing * 1; // <-- CORRIGÉ
+}
+
+// --- En-tête ---
+.order-page-header {
+  text-align: center;
+  margin-bottom: $base-spacing * 2.5;
+  padding-bottom: $base-spacing * 1.5;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: $dark-grey;
+    margin-bottom: $base-spacing * 0.5;
+  }
+  p.lead { // Cibler spécifiquement la classe 'lead' si elle existe
+    font-size: 1.1rem;
+    color: $secondary-color;
+    margin-bottom: 0;
+  }
+}
+
+// --- Grille Simple (Simulation Row/Col) ---
+.row-grid { // Remplacer <div class="row"> par <div class="row-grid"> dans le HTML
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -$base-spacing * 0.75; // Gouttières négatives
+  margin-right: -$base-spacing * 0.75;
+}
+
+.col-form, .col-summary { // Remplacer col-lg-7 et col-lg-5
+  width: 100%; // Par défaut pleine largeur (mobile first)
+  padding-left: $base-spacing * 0.75;
+  padding-right: $base-spacing * 0.75;
+  margin-bottom: $base-spacing * 1.5; // Ajouter une marge en bas par défaut
+}
+
+@media (min-width: 992px) { // Breakpoint 'lg'
+  .col-form {
+    flex: 0 0 auto;
+    width: 58.33333%; // Simule col-lg-7
+    margin-bottom: 0; // Retirer marge sur grand écran
+  }
+  .col-summary {
+    flex: 0 0 auto;
+    width: 41.66667%; // Simule col-lg-5
+     margin-bottom: 0; // Retirer marge sur grand écran
+  }
+  // Ces classes doivent être ajoutées au HTML si cet ordre est désiré
+  .order-lg-first { order: -1; }
+  .order-lg-last { order: 1; }
+}
+
+// --- Styles des Cartes ---
+.summary-card, .form-card {
+  background-color: #fff;
+  border: 1px solid $border-color;
+  border-radius: $border-radius * 1.5; // Arrondi plus marqué
+  box-shadow: $card-shadow;
+  // margin-bottom: $base-spacing * 1.5; // Géré par .col-* maintenant
+  overflow: hidden; // Important pour l'arrondi avec header
+
+  .card-header { // Simuler l'en-tête de carte
+    background-color: $light-grey;
+    padding: $base-spacing $base-spacing * 1.25;
+    border-bottom: 1px solid $border-color;
+
+    h3 {
+      font-size: 1.1rem; // Taille titre carte
+      font-weight: 600;
+      margin-bottom: 0;
+      // color: darken($primary-color, 10%); <-- ANCIEN
+      color: color.adjust($primary-color, $lightness: -10%); // <-- CORRIGÉ
+      i { // Style des icônes (si vous les importez autrement que BS Icons)
+        margin-right: $base-spacing * 0.5;
+        font-style: normal; // Si ce ne sont pas de vraies icônes font
+      }
+    }
+  }
+
+  .card-body { // Simuler le corps de carte
+     padding: $base-spacing * 1.5;
+     position: relative; // Pour l'overlay formulaire
+  }
+}
+
+// --- Récapitulatif Panier ---
+.summary-card {
+  // Sticky (doit être testé, peut nécessiter ajustements)
+  // position: sticky; // Le sticky top de BS est peut-être mieux géré
+  // top: 20px;
+  // z-index: 100; // Assurer qu'il est au-dessus du contenu scrollable
+
+  // @media (max-width: 991.98px) {
+  //   position: static; // Pas de sticky sur petits écrans
+  // }
+
+  ul.cart-summary-list { // Simuler list-group-flush
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+
+    li { // Simuler list-group-item
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start; // Aligner en haut
+      padding: $base-spacing ($base-spacing * 1.25);
+      // border-bottom: 1px dashed lighten($border-color, 5%); <-- ANCIEN
+      border-bottom: 1px dashed color.adjust($border-color, $lightness: 5%); // <-- CORRIGÉ
+      line-height: 1.4;
+
+      &:last-child { border-bottom: none; } // Total
+
+      .item-details {
+        margin-right: $base-spacing;
+        flex-grow: 1;
+        h6 { // Titre du livre
+          font-size: 0.95rem;
+          font-weight: 500;
+          margin: 0 0 ($base-spacing * 0.2) 0;
+          a {
+            color: $dark-grey;
+            text-decoration: none;
+            &:hover { color: $primary-color; }
+          }
+        }
+        small.item-meta { // Quantité / Prix unit.
+          font-size: 0.8rem;
+          color: $text-muted-color;
+        }
+      }
+
+      span.item-subtotal { // Prix de la ligne
+        font-size: 0.95rem;
+        color: $secondary-color;
+        font-weight: 500;
+        white-space: nowrap; // Empêcher retour à la ligne
+      }
+    }
+
+    li.total-row { // Style spécifique ligne total
+      // background-color: darken($light-grey, 3%); <-- ANCIEN
+      background-color: color.adjust($light-grey, $lightness: -3%); // <-- CORRIGÉ
+      font-weight: bold;
+      font-size: 1.1rem; // Taille ligne total
+      border-top: 2px solid $primary-color;
+      padding-top: $base-spacing * 1.1;
+      padding-bottom: $base-spacing * 1.1;
+      border-bottom-left-radius: inherit; // Garder arrondi carte
+      border-bottom-right-radius: inherit;
+
+      span { font-weight: 600; } // "Total"
+      strong { font-size: 1.2em; color: $success-color; } // Montant
+    }
+  }
+}
+
+// --- Formulaire Commande ---
+.form-card {
+
+  .loading-overlay { // Style de l'overlay (si utilisé avec *ngIf)
+    position: absolute; inset: 0; background-color: rgba(255, 255, 255, 0.9);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 10; border-radius: inherit; backdrop-filter: blur(3px);
+    .spinner-border { width: 3rem; height: 3rem; border-width: 0.25em; color: $primary-color; margin-bottom: $base-spacing; }
+    .loading-text { font-weight: 500; color: $primary-color; }
+  }
+
+  form {
+    legend.form-section-title { // Style des légendes de fieldset
+      font-size: 1.1rem; font-weight: 600; color: $primary-color;
+      margin-bottom: $base-spacing * 1.5; padding-bottom: $base-spacing * 0.6;
+      // border-bottom: 1px solid lighten($border-color, 5%); <-- ANCIEN
+      border-bottom: 1px solid color.adjust($border-color, $lightness: 5%); // <-- CORRIGÉ
+    }
+
+    label.form-label { // Style des labels
+      display: block; // Important pour la marge
+      font-size: 0.875rem; font-weight: 600; color: $secondary-color;
+      margin-bottom: $base-spacing * 0.3;
+      span.text-danger { color: $danger-color; margin-left: 3px; }
+    }
+
+    // Style générique pour les inputs text et email
+    // Appliquer la classe .form-control dans le HTML
+    input.form-control {
+      display: block;
+      width: 100%;
+      padding: $base-spacing * 0.7 $base-spacing * 1;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: $base-line-height;
+      color: $body-color; // <-- Utilisation de la variable corrigée/définie
+      background-color: #fff;
+      background-clip: padding-box;
+      border: 1px solid $border-color;
+      appearance: none;
+      border-radius: $border-radius;
+      transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.075);
+
+      &:focus {
+        color: $body-color;
+        background-color: #fff;
+        // border-color: lighten($primary-color, 25%); <-- ANCIEN
+        border-color: color.adjust($primary-color, $lightness: 25%); // <-- CORRIGÉ
+        outline: 0;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,.075), 0 0 0 0.25rem rgba($primary-color, 0.25);
+      }
+
+      // Style validation (utilise les classes .is-invalid / .is-valid de Bootstrap/Angular)
+      &.is-invalid {
+        border-color: $danger-color;
+        &:focus { box-shadow: 0 0 0 0.25rem rgba($danger-color, 0.25); }
+      }
+      &.is-valid {
+        border-color: $success-color;
+         &:focus { box-shadow: 0 0 0 0.25rem rgba($success-color, 0.25); }
+      }
+    }
+
+    // Cibler spécifiquement les types si nécessaire (redondant si .form-control est utilisé partout)
+    // input[type="text"], input[type="email"] { ... }
+
+    .invalid-feedback { // Style des messages d'erreur
+      // display: none; // Bootstrap gère l'affichage via .is-invalid sur le parent ou l'input
+      width: 100%;
+      margin-top: $base-spacing * 0.25;
+      font-size: .875em;
+      color: $danger-color;
+      font-weight: 500;
+    }
+    // L'affichage est géré par Angular/Bootstrap via la classe .is-invalid sur l'input
+
+    hr.form-divider { // Séparateur
+      margin: ($base-spacing * 2) 0;
+      border: 0;
+      border-top: 1px dashed $border-color;
+    }
+
+    // Alerte erreur soumission (classe .validation-summary à ajouter dans le HTML)
+    .validation-summary {
+      padding: $base-spacing;
+      margin-bottom: $base-spacing;
+      border: 1px solid transparent;
+      border-radius: $border-radius;
+      // color: darken($danger-color, 15%); <-- ANCIEN
+      color: color.adjust($danger-color, $lightness: -15%); // <-- CORRIGÉ
+      // background-color: lighten($danger-color, 40%); <-- ANCIEN
+      background-color: color.adjust($danger-color, $lightness: 40%); // <-- CORRIGÉ (ou color.mix(#fff, $danger-color, 80%))
+      // border-color: lighten($danger-color, 30%); <-- ANCIEN
+      border-color: color.adjust($danger-color, $lightness: 30%); // <-- CORRIGÉ
+      display: flex;
+      align-items: center;
+      i { margin-right: $base-spacing * 0.5; color: inherit; }
+    }
+
+    // Boutons (classe .form-actions à ajouter dans le HTML)
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: $base-spacing;
+      margin-top: $base-spacing * 2;
+
+      // Style commun bouton (classe .btn à ajouter dans le HTML)
+      .btn {
+        display: inline-block;
+        font-weight: 600;
+        line-height: $base-line-height;
+        color: $body-color; // Modifié pour être cohérent
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: $base-spacing*0.6 $base-spacing*1.5;
+        font-size: 1rem;
+        border-radius: $border-radius-lg; // Utilisation variable ajoutée
+        transition: $transition-base; // Utilisation variable ajoutée
+        white-space: nowrap;
+
+        &:disabled, &.disabled {
+           pointer-events: none;
+           opacity: 0.65;
+           box-shadow: none;
+        }
+
+         i { margin-right: $base-spacing * 0.4; vertical-align: -0.1em; }
+
+         .spinner-border { width: 1em; height: 1em; border-width: .18em; vertical-align: -0.125em; margin-right: $base-spacing * 0.4;}
+      }
+
+      // Bouton Annuler (classe .btn-cancel à ajouter dans le HTML)
+      .btn-cancel {
+        color: $secondary-color;
+        border-color: $secondary-color;
+        &:hover {
+          color: #fff;
+          background-color: $secondary-color;
+          border-color: $secondary-color;
+        }
+      }
+
+      // Bouton Confirmer (classe .btn-submit à ajouter dans le HTML)
+      .btn-submit {
+        color: #fff;
+        background-color: $success-color;
+        border-color: $success-color;
+        padding: $base-spacing*0.8 $base-spacing*2;
+        // box-shadow: 0 2px 5px rgba(darken($success-color, 20%), 0.2); <-- ANCIEN
+        box-shadow: 0 2px 5px rgba(color.adjust($success-color, $lightness: -20%), 0.2); // <-- CORRIGÉ
+
+        &:hover:not(:disabled) {
+          // background-color: darken($success-color, 8%); <-- ANCIEN
+          background-color: color.adjust($success-color, $lightness: -8%); // <-- CORRIGÉ
+          // border-color: darken($success-color, 10%); <-- ANCIEN
+          border-color: color.adjust($success-color, $lightness: -10%); // <-- CORRIGÉ
+          // box-shadow: 0 4px 8px rgba(darken($success-color, 20%), 0.25); <-- ANCIEN
+          box-shadow: 0 4px 8px rgba(color.adjust($success-color, $lightness: -20%), 0.25); // <-- CORRIGÉ
+        }
+      }
+    }
+  } // fin form
+} // fin form-card
+
+// --- Message Panier Vide (classe .empty-cart-message à ajouter dans le HTML) ---
+.empty-cart-message {
+  padding: $base-spacing;
+  margin-bottom: $base-spacing;
+  border: 1px solid transparent;
+  border-radius: $border-radius;
+  // color: darken($warning-color, 30%); <-- ANCIEN
+  color: color.adjust($warning-color, $lightness: -30%); // <-- CORRIGÉ
+  // background-color: lighten($warning-color, 35%); <-- ANCIEN
+  background-color: color.adjust($warning-color, $lightness: 35%); // <-- CORRIGÉ
+  // border-color: lighten($warning-color, 25%); <-- ANCIEN
+  border-color: color.adjust($warning-color, $lightness: 25%); // <-- CORRIGÉ
+  text-align: center;
+  font-weight: 500;
+  // i { vertical-align: -0.15em; color: darken($warning-color, 10%); margin-right: $base-spacing * 0.5; } <-- ANCIEN
+  i { vertical-align: -0.15em; color: color.adjust($warning-color, $lightness: -10%); margin-right: $base-spacing * 0.5; } // <-- CORRIGÉ
+}
+
+// --- Responsive ---
+// La grille gère déjà l'empilement. Styles spécifiques si besoin.
+@media (max-width: 575.98px) {
+  .form-card form .form-actions {
+    flex-direction: column; // Empiler boutons
+    .btn { width: 100%; } // Pleine largeur
+    // Ces classes doivent être ajoutées au HTML si cet ordre est désiré
+    .order-sm-1 { order: 1; }
+    .order-sm-2 { order: 2; }
+  }
+}

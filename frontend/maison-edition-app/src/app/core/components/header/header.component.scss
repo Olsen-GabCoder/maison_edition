@@ -1,147 +1,354 @@
 // src/app/core/components/header/header.component.scss
 
-// Variables de thème pour l'en-tête
-$header-bg: #f8f9fa;
-$header-text-color: #343a40;
-$header-link-color: #007bff;
-$header-link-hover-color: darken($header-link-color, 15%);
-$header-active-link-color: #28a745;
-$header-border-color: #dee2e6;
-$header-height: 60px;
-$logo-font-family: 'Your Preferred Font', sans-serif; // Remplacez par votre police
-$logo-font-size: 1.5rem;
-$nav-link-font-size: 1rem;
-$nav-link-padding: 0.75rem 1rem;
-$button-logout-color: #dc3545;
-$button-logout-hover-color: darken($button-logout-color, 15%);
-$admin-link-color: #ffc107;
-$admin-link-hover-color: darken($admin-link-color, 15%);
+//==========================================================================
+// Variables & Configuration
+//==========================================================================
 
+// Colors
+$header-bg: #ffffff; // Fond du header
+$header-border-bottom-color: #e0e0e0; // Bordure inférieure légère
+$logo-color: #333; // Couleur du texte du logo
+$logo-color-hover: #007bff; // Couleur du logo au survol
+$nav-link-color: #454545; // Couleur des liens de navigation
+$nav-link-color-hover: #0056b3; // Couleur des liens au survol
+$nav-link-color-active: #0056b3; // Couleur du lien actif
+$nav-link-active-border: #0056b3; // Couleur de la bordure sous le lien actif
+$logout-btn-color: #dc3545; // Couleur du bouton déconnexion
+$logout-btn-color-hover: #c82333; // Couleur du bouton déconnexion au survol
+$badge-bg: #dc3545; // Fond de la pastille panier (correspond à bg-danger)
+$badge-text-color: #ffffff; // Texte de la pastille panier
+$admin-link-color: #28a745; // Couleur spécifique lien admin (optionnel)
+$admin-link-color-hover: #218838; // Couleur spécifique lien admin au survol (optionnel)
+
+// Typography
+$base-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$logo-font-size: 1.75rem;
+$nav-font-size: 0.95rem;
+$badge-font-size: 0.7rem;
+
+// Layout & Spacing
+$header-height: 65px;
+$header-padding-y: 0;
+$header-padding-x: 2rem;
+$container-max-width: 1280px;
+$nav-link-padding-y: 0.5rem;
+$nav-link-padding-x: 1rem;
+$nav-gap: 0.8rem; // Espace entre les éléments de navigation principaux
+$badge-size: 18px; // Taille approximative de la pastille
+$badge-offset-top: -8px; // Décalage vertical de la pastille
+$badge-offset-right: -10px; // Décalage horizontal de la pastille
+$logo-height: 40px;         // <<<=== NOUVELLE VARIABLE pour la hauteur du logo
+$logo-spacing: 0.8rem;      // <<<=== NOUVELLE VARIABLE pour l'espace après le logo
+
+// Effects & Transitions
+$base-transition-duration: 0.2s;
+$base-transition-timing: ease-in-out;
+$header-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+
+// Breakpoints (pour la réactivité future)
+$breakpoint-lg: 992px;
+$breakpoint-md: 768px;
+$breakpoint-sm: 576px;
+
+//==========================================================================
+// Base Header Styles
+//==========================================================================
 .app-header {
   background-color: $header-bg;
-  color: $header-text-color;
-  border-bottom: 1px solid $header-border-color;
   height: $header-height;
+  width: 100%;
+  position: sticky; // Ou fixed si vous préférez
+  top: 0;
+  left: 0;
+  z-index: 1030; // Assure qu'il est au-dessus de la plupart des contenus
+  box-shadow: $header-shadow;
+  border-bottom: 1px solid $header-border-bottom-color;
+  font-family: $base-font-family;
   display: flex;
-  align-items: center;
-  justify-content: center; // Centre le contenu horizontalement sur les très grands écrans
+  align-items: center; // Centre verticalement le contenu dans le header
 
+  // Styles pour le container intérieur
   .header-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; // Espace le logo et la navigation
+    align-items: center; // Aligne verticalement logo et nav
     width: 100%;
-    max-width: 1200px; // Largeur maximale pour le contenu de l'en-tête
-    padding: 0 20px; // Ajoute un peu de marge sur les côtés
-  }
+    max-width: $container-max-width;
+    height: 100%; // Prend toute la hauteur du header
+    margin: 0 auto; // Centre le container s'il a une max-width
+    padding: $header-padding-y $header-padding-x;
+    box-sizing: border-box; // Inclut padding dans la largeur/hauteur
 
-  .logo-container {
-    a.logo-link {
-      text-decoration: none;
-      color: $header-text-color;
+    //==========================================================================
+    // Logo Section
+    //==========================================================================
+    .logo-container {
+      flex-shrink: 0; // Empêche le logo de rétrécir
 
-      h1 {
-        margin: 0;
-        font-family: $logo-font-family;
-        font-size: $logo-font-size;
-        line-height: 1;
+      .logo-link {
+        text-decoration: none;
+        // display: inline-block; // Remplacé par flex pour aligner logo et texte
+        display: flex;         // <<<=== AJOUT : Aligne l'image et le texte sur une ligne
+        align-items: center;   // <<<=== AJOUT : Centre verticalement l'image et le texte
+        color: inherit;        // <<<=== AJOUT : Assure que le lien prend la couleur parente ou celle définie ci-dessous
+
+        // <<<=== AJOUT : Styles pour l'image du logo ===
+        .logo-image {
+          height: $logo-height;   // Utilise la variable
+          width: auto;            // Laisse la largeur s'ajuster
+          margin-right: $logo-spacing; // Espace entre logo et texte (variable)
+        }
+        // <<<=== FIN AJOUT Logo Image ===
+
+        h1 {
+          margin: 0;
+          font-size: $logo-font-size;
+          font-weight: 700;
+          color: $logo-color;
+          transition: color $base-transition-duration $base-transition-timing;
+          line-height: 1.2; // Ajustement de la hauteur de ligne
+        }
+
+        &:hover,
+        &:focus {
+          text-decoration: none;
+          h1 {
+            color: $logo-color-hover;
+          }
+          // Optionnel: ajouter un effet sur le logo au survol si besoin
+          // .logo-image { ... }
+        }
+         &:focus-visible { // Style de focus pour l'accessibilité
+            outline: 2px solid $logo-color-hover;
+            outline-offset: 2px;
+            border-radius: 3px; // Optionnel, pour arrondir le contour de focus
+          }
       }
     }
-  }
 
-  .main-navigation {
-    display: flex;
-    align-items: center;
+    //==========================================================================
+    // Main Navigation Section
+    //==========================================================================
+    .main-navigation {
+      display: flex;
+      align-items: center; // Aligne tous les éléments de nav sur la ligne médiane
+      gap: $nav-gap; // Espace entre les liens/boutons directs enfants de nav
 
-    a {
-      color: $header-link-color;
-      text-decoration: none;
-      padding: $nav-link-padding;
-      font-size: $nav-link-font-size;
-      transition: color 0.3s ease;
+      // Styles communs pour les liens et le bouton logout stylisé comme un lien
+      a, .btn-logout {
+        display: inline-flex; // Permet l'alignement vertical avec les icônes si besoin
+        align-items: center;
+        padding: $nav-link-padding-y $nav-link-padding-x;
+        font-size: $nav-font-size;
+        font-weight: 500;
+        color: $nav-link-color;
+        text-decoration: none;
+        border-radius: 4px; // Léger arrondi
+        transition: color $base-transition-duration $base-transition-timing,
+                    background-color $base-transition-duration $base-transition-timing,
+                    border-color $base-transition-duration $base-transition-timing;
+        position: relative; // Utile pour pseudo-éléments ou liens actifs
+        white-space: nowrap; // Empêche le texte des liens de passer à la ligne
 
-      &:hover {
-        color: $header-link-hover-color;
+        // Style au survol
+        &:hover:not(.active-link) { // Ne pas appliquer le survol si déjà actif
+          color: $nav-link-color-hover;
+          background-color: darken($header-bg, 4%); // Léger fond au survol
+          text-decoration: none; // Assure qu'aucun soulignement n'apparaît
+        }
+
+        // Style de focus pour l'accessibilité
+        &:focus-visible {
+          outline: none; // Supprime l'outline par défaut
+          box-shadow: 0 0 0 2px rgba($nav-link-color-hover, 0.5); // Outline customisé
+        }
+
+        // Style pour le lien actif (via routerLinkActive)
+        &.active-link {
+          color: $nav-link-color-active;
+          font-weight: 600; // Le rendre un peu plus gras
+          // Option 1: Bordure inférieure
+           border-bottom: 3px solid $nav-link-active-border;
+           padding-bottom: calc(#{$nav-link-padding-y} - 3px); // Ajuster pour que la hauteur reste la même
+          // Option 2: Fond différent
+          // background-color: lighten($nav-link-color-active, 45%);
+        }
+
+        // Styles spécifiques pour les icônes dans les liens (comme le panier)
+        i.bi {
+          font-size: 1.3em; // Ajuster la taille de l'icône par rapport au texte
+          line-height: 1; // Assurer un bon alignement vertical
+          margin-right: 0.3em; // Espace entre icône et texte (si texte il y a)
+        }
       }
 
-      &.active-link {
-        color: $header-active-link-color;
-        font-weight: bold;
+      //-----------------------------------------
+      // Cart Specific Styles
+      //-----------------------------------------
+      .cart-link {
+         padding-left: 0.5rem;
+         padding-right: 0.5rem;
+
+        i.bi-cart3 {
+          margin-right: 0;
+        }
+
+        .cart-badge {
+          position: absolute;
+          top: $badge-offset-top;
+          right: $badge-offset-right;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-width: $badge-size;
+          height: $badge-size;
+          padding: 0 5px;
+          font-size: $badge-font-size;
+          font-weight: 600;
+          line-height: 1;
+          color: $badge-text-color;
+          background-color: $badge-bg;
+          border-radius: 50%;
+           transform-origin: center center;
+           transition: transform 0.2s ease-out, background-color 0.2s ease-in-out;
+           &:not(:empty) {
+             animation: badge-pop 0.3s ease-out forwards;
+           }
+        }
+      }
+      @keyframes badge-pop {
+        0% { transform: scale(0.8); opacity: 0.5; }
+        70% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
       }
 
-      &.admin-link {
-        color: $admin-link-color;
 
-        &:hover {
-          color: $admin-link-hover-color;
+      //-----------------------------------------
+      // Spacer Element
+      //-----------------------------------------
+      .spacer {
+         margin: 0 $nav-gap;
+         width: 1px;
+         background-color: $header-border-bottom-color;
+         height: 20px;
+         align-self: center;
+      }
+
+      //-----------------------------------------
+      // Admin Link Specific Styles (Optionnel)
+      //-----------------------------------------
+      // Add styles here if needed in the future
+
+      //-----------------------------------------
+      // Logout Button Specific Styles
+      //-----------------------------------------
+      .btn-logout {
+        background: none;
+        border: none;
+        color: $logout-btn-color;
+        cursor: pointer;
+        padding: $nav-link-padding-y $nav-link-padding-x;
+        font-family: inherit;
+        font-size: $nav-font-size;
+        font-weight: 500;
+
+        &:hover, &:focus {
+          color: $logout-btn-color-hover;
+          background-color: lighten($logout-btn-color, 45%);
+          text-decoration: none;
+        }
+         &:focus-visible {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba($logout-btn-color-hover, 0.5);
+        }
+        &.active-link {
+            border-bottom: none;
+            font-weight: 500;
         }
       }
     }
-
-    .user-greeting {
-      font-size: $nav-link-font-size;
-      color: $header-text-color;
-    }
-
-    .btn-logout {
-      color: $button-logout-color;
-      text-decoration: none;
-      background: none;
-      border: none;
-      padding: $nav-link-padding;
-      font-size: $nav-link-font-size;
-      cursor: pointer;
-      transition: color 0.3s ease;
-
-      &:hover {
-        color: $button-logout-hover-color;
-      }
-    }
   }
 }
 
-// Responsive design (ajuster les breakpoints selon vos besoins)
-@media (max-width: 768px) {
+//==========================================================================
+// Responsive Adjustments (Exemple simple)
+//==========================================================================
+@media (max-width: $breakpoint-lg) {
   .app-header {
     .header-container {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 10px 20px;
-    }
+      padding: $header-padding-y calc(#{$header-padding-x} / 2); // Utilisation de calc pour être sûr
 
-    .logo-container {
-      margin-bottom: 10px;
-    }
-
-    .main-navigation {
-      flex-direction: column;
-      width: 100%;
-
-      a,
-      .user-greeting,
-      .btn-logout {
-        padding: 0.5rem 0;
-        display: block;
+      // <<<=== AJOUT : Ajuster l'espace du logo sur écrans moyens ===
+      .logo-container .logo-link .logo-image {
+          margin-right: $logo-spacing * 0.8; // Réduire légèrement l'espace
       }
+      // <<<=== FIN AJOUT ===
 
-      .ms-2, .me-1 { // Suppression des marges spécifiques sur mobile
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+      .main-navigation {
+        gap: calc(#{$nav-gap} / 1.5);
+
+        a, .btn-logout {
+          padding: $nav-link-padding-y calc(#{$nav-link-padding-x} / 1.5);
+          font-size: $nav-font-size * 0.95;
+        }
       }
+       .logo-container h1 {
+         font-size: $logo-font-size * 0.9;
+       }
     }
   }
 }
 
-@media (min-width: 769px) and (max-width: 992px) {
+@media (max-width: $breakpoint-md) {
   .app-header {
-    .header-container {
-      padding: 0 30px;
-    }
+      height: auto;
+      min-height: $header-height;
 
-    .main-navigation {
-      a {
-        padding: 0.5rem 0.75rem;
-      }
-    }
-  }
+     .header-container {
+       flex-direction: column;
+       align-items: flex-start;
+       padding: calc(#{$header-padding-y} / 2) calc(#{$header-padding-x} / 2);
+
+        .logo-container {
+           margin-bottom: 0.5rem;
+
+           // <<<=== AJOUT : Ajuster la taille et l'espace du logo sur petits écrans ===
+           .logo-link {
+               .logo-image {
+                   height: $logo-height * 0.85; // Rendre le logo un peu plus petit
+                   margin-right: $logo-spacing * 0.7; // Réduire encore l'espace
+               }
+               h1 {
+                   font-size: $logo-font-size * 0.85; // Réduire aussi le texte
+               }
+           }
+           // <<<=== FIN AJOUT ===
+         }
+
+       .main-navigation {
+         width: 100%;
+         flex-wrap: wrap;
+         justify-content: center;
+         gap: calc(#{$nav-gap} / 2);
+
+         a, .btn-logout {
+            padding: calc(#{$nav-link-padding-y} / 1.5) calc(#{$nav-link-padding-x} / 2);
+            font-size: $nav-font-size * 0.9;
+         }
+          .spacer {
+             display: none;
+           }
+           .cart-link .cart-badge {
+              top: -6px;
+              right: -8px;
+              min-width: $badge-size * 0.9;
+              height: $badge-size * 0.9;
+              font-size: $badge-font-size * 0.9;
+           }
+       }
+     }
+   }
 }
+
+// Classes utilitaires Bootstrap utilisées dans le HTML (non définies ici)
+// Ex: .visually-hidden, .ms-2, .me-1, .p-0 etc.

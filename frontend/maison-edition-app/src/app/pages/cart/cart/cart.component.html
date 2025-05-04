@@ -1,0 +1,104 @@
+<!-- src/app/pages/cart/cart/cart.component.html -->
+<div class="container py-4 cart-page-container">
+  <h2 class="mb-4 text-center">🛒 Mon Panier</h2>
+
+  <ng-container *ngIf="totalItems() > 0; else emptyCart">
+    <div class="row">
+      <!-- Colonne gauche: Liste des articles -->
+      <div class="col-lg-8">
+        <div *ngFor="let item of cartItems(); trackBy: trackByBookId" class="card mb-3 shadow-sm">
+          <div class="row g-0 align-items-center">
+            <!-- Image -->
+            <div class="col-md-2 text-center p-2">
+              <a [routerLink]="['/books', item.bookId]">
+                <img [src]="item.coverUrl || 'assets/images/placeholder.png'"
+                     [alt]="item.title"
+                     class="img-fluid rounded-start"
+                     style="max-height: 100px; object-fit: contain;"> <!-- Style amélioré -->
+              </a>
+            </div>
+
+            <!-- Détails -->
+            <div class="col-md-4">
+              <div class="card-body py-2"> <!-- Moins de padding vertical -->
+                <h5 class="card-title mb-1 fs-6"> <!-- Taille de police réduite -->
+                  <a [routerLink]="['/books', item.bookId]" class="text-decoration-none text-dark">{{ item.title }}</a>
+                </h5>
+                <p class="text-muted small mb-0">Prix unitaire :</p>
+                <p class="fw-bold mb-0">{{ item.price | currency:'EUR':'symbol':'1.2-2':'fr' }}</p>
+              </div>
+            </div>
+
+            <!-- Quantité -->
+            <div class="col-md-2 text-center px-md-1"> <!-- Moins de padding horizontal -->
+              <label [for]="'quantity-' + item.bookId" class="form-label visually-hidden">Quantité</label>
+              <input type="number"
+                     [id]="'quantity-' + item.bookId"
+                     class="form-control form-control-sm text-center"
+                     [ngModel]="item.quantity"
+                     (change)="updateQuantity(item, $event)"
+                     min="0"
+                     aria-label="Quantité">
+            </div>
+
+            <!-- Sous-total -->
+            <div class="col-md-2 text-center">
+              <div class="fw-bold text-success">
+                {{ getItemSubtotal(item) | currency:'EUR':'symbol':'1.2-2':'fr' }}
+              </div>
+            </div>
+
+            <!-- Supprimer -->
+            <div class="col-md-2 text-center">
+              <button class="btn btn-sm btn-outline-danger border-0" (click)="removeItem(item)" title="Supprimer l'article">
+                <i class="bi bi-trash fs-5"></i> <!-- Icône plus grande, pas de texte -->
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne droite: Résumé -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm sticky-top" style="top: 20px;"> <!-- Rendre le résumé sticky -->
+          <div class="card-body">
+            <h4 class="card-title">Résumé</h4>
+            <ul class="list-group list-group-flush mb-3">
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Articles :</span>
+                <span>{{ totalItems() }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between fw-bold fs-5"> <!-- Total plus grand -->
+                <span>Total :</span>
+                <span>{{ totalAmount() | currency:'EUR':'symbol':'1.2-2':'fr' }}</span>
+              </li>
+            </ul>
+            <!-- === Zone des boutons modifiée === -->
+            <div class="d-grid gap-2">
+              <!-- Bouton Vider le panier -->
+              <button class="btn btn-outline-danger" (click)="clearCart()">
+                  <i class="bi bi-cart-x me-1"></i> Vider le panier
+              </button>
+              <!-- Nouveau bouton Passer la commande -->
+              <button class="btn btn-success" (click)="goToCartOrderPage()">
+                 <i class="bi bi-credit-card me-1"></i> Passer la commande
+               </button>
+            </div>
+            <!-- =============================== -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Panier vide -->
+  <ng-template #emptyCart>
+    <div class="text-center py-5">
+      <i class="bi bi-cart3 display-1 text-muted"></i> <!-- Icône plus grande -->
+      <p class="lead mt-3">Votre panier est actuellement vide.</p>
+      <a routerLink="/" class="btn btn-primary mt-3">
+          <i class="bi bi-book me-1"></i> Continuer mes achats
+      </a>
+    </div>
+  </ng-template>
+</div>

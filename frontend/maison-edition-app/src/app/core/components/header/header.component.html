@@ -1,34 +1,55 @@
-<!-- src/app/core/components/header/header.component.html -->
+<!-- src/app/core/components/header/header.component.html (AVEC LOGO) -->
 <header class="app-header">
   <div class="header-container">
     <div class="logo-container">
-      <!-- Lien sur le logo/titre pour revenir à l'accueil -->
       <a routerLink="/" class="logo-link">
-        <h1>Ma Maison d'Édition</h1>
+        <!-- === AJOUT DU LOGO === -->
+        <img src="assets/images/logo.png" alt="EditApp Logo" class="logo-image">
+        <!-- ===================== -->
+        <h1>EditApp</h1>
       </a>
     </div>
     <nav class="main-navigation">
-      <!-- Lien Accueil -->
+      <!-- Liens Principaux -->
       <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
-      <!-- Lien Contact -->
       <a routerLink="/contact" routerLinkActive="active-link">Contact</a>
 
-      <!-- === Section Authentification Utilisateur === -->
-      <ng-container *ngIf="(currentUser$ | async) as user; else loggedOutUser">
-        <!-- Utilisateur CONNECTÉ -->
-        <a routerLink="/my-orders" routerLinkActive="active-link">Mes Commandes</a>
-        <!-- Optionnel: Lien vers une future page "Mon Compte" -->
-        <!-- <a routerLink="/account" routerLinkActive="active-link">Mon Compte</a> -->
-        <span class="user-greeting ms-2 me-1"></span> <!-- Message simple ou user.email -->
+      <!-- === Section Utilisateur (Contient maintenant tout ce qui dépend de la connexion/rôle) === -->
+      <ng-container *ngIf="currentUser$ | async as user; else loggedOutNav">
+
+        <!-- *** Utilisateur CONNECTÉ *** -->
+
+        <!-- LIEN PANIER (Visible seulement si USER) -->
+        <a *ngIf="user.role !== 'admin'" routerLink="/cart" routerLinkActive="active-link" class="cart-link" title="Voir mon panier">
+          <i class="bi bi-cart3"></i>
+          <span *ngIf="cartItemCount() > 0" class="cart-badge badge rounded-pill bg-danger">
+            {{ cartItemCount() }}
+            <span class="visually-hidden">🛒</span>
+          </span>
+        </a>
+
+        <!-- Spacer (pour séparer les groupes de liens) -->
+        <span class="spacer"></span>
+
+        <!-- Lien Admin (Visible seulement si ADMIN) -->
+        <a *ngIf="user.role === 'admin'" routerLink="/admin" routerLinkActive="active-link" class="admin-link">Administration</a>
+
+        <!-- LIEN PROFIL (Visible seulement si USER) -->
+        <a *ngIf="user.role !== 'admin'" routerLink="/profile" routerLinkActive="active-link">Mon Profil</a>
+
+        <!-- Bouton Déconnexion (toujours visible si connecté) -->
         <button class="btn btn-link btn-logout p-0" (click)="logoutUser()" title="Déconnexion">Déconnexion</button>
+
       </ng-container>
 
-      <ng-template #loggedOutUser>
-        <!-- Utilisateur DÉCONNECTÉ -->
-        <!-- Le lien Mes Commandes est caché ici, mais tu pourrais le laisser et la page redirigerait vers login -->
+      <ng-template #loggedOutNav>
+        <!-- *** Utilisateur DÉCONNECTÉ *** -->
+         <span class="spacer"></span>
         <a routerLink="/login" routerLinkActive="active-link">Connexion</a>
+        <a routerLink="/register" routerLinkActive="active-link">Inscription</a>
       </ng-template>
-      <!-- === Fin Section Authentification Utilisateur === -->
+      <!-- === Fin Section Utilisateur === -->
+
     </nav>
   </div>
 </header>

@@ -1,11 +1,10 @@
-// src/app/pages/login/login.component.ts - CORRIGÉ IMPORT UserProfile
+// src/app/pages/login/login.component.ts (Redirection Admin Prioritaire)
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
-// --- Imports Corrigés ---
 import { AuthService } from '../../core/services/auth.service';
-import { UserProfile } from '../../models/user.model'; // <<<=== Importer depuis le bon fichier
+import { UserProfile } from '../../models/user.model';
 import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
@@ -36,7 +35,19 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    // console.log('[LoginComponent] URL de retour cible:', this.returnUrl); // Log optionnel
+    console.log('[LoginComponent] Initialisé. URL de retour cible:', this.returnUrl);
+
+    // Redirection si déjà connecté (logique existante OK)
+    if (this.authService.isLoggedIn()) {
+      console.log('[LoginComponent] Utilisateur déjà connecté, redirection...');
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser?.role === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
+        // Pour un user déjà connecté, le profil est la destination logique
+        this.router.navigate(['/profile']);
+      }
+    }
   }
 
   get email() { return this.loginForm.get('email'); }
@@ -59,29 +70,38 @@ export class LoginComponent implements OnInit {
       next: (userProfile: UserProfile) => {
         this.isLoading = false;
         this.notificationService.showSuccess('Connexion réussie !');
-        // console.log('[LoginComponent] Connexion réussie, profil reçu:', userProfile); // Log optionnel
+        console.log('[LoginComponent] Connexion réussie, profil reçu:', userProfile);
 
-        // Logique de Redirection
-        if (this.returnUrl && this.returnUrl !== '/') {
-           // console.log(`[LoginComponent] Redirection vers returnUrl: ${this.returnUrl}`); // Log optionnel
-           this.router.navigateByUrl(this.returnUrl);
-        }
-        else if (userProfile.role === 'admin') {
-          // console.log('[LoginComponent] Redirection vers /admin'); // Log optionnel
+        // === Logique de Redirection (MISE À JOUR - Priorité Admin) ===
+
+        // 1. CAS PRIORITAIRE : Si l'utilisateur est ADMIN, toujours rediriger vers /admin
+        if (userProfile.role === 'admin') {
+          console.log('[LoginComponent] Redirection Admin vers /admin (prioritaire)');
           this.router.navigate(['/admin']);
-        } else {
-          // console.log('[LoginComponent] Redirection vers /'); // Log optionnel
-          this.router.navigate(['/']);
         }
+        // 2. SINON (utilisateur non-admin) : Gérer returnUrl ou rediriger vers /profile
+        else {
+          // Vérifier si une URL de retour valide est demandée
+          const nonRedirectingUrls = ['/login', '/register', '/admin']; // Ajouter /admin aux URL à ignorer pour returnUrl
+          if (this.returnUrl && this.returnUrl !== '/' && !nonRedirectingUrls.includes(this.returnUrl)) {
+            console.log(`[LoginComponent] Redirection User vers returnUrl: ${this.returnUrl}`);
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            // Redirection par défaut pour les utilisateurs non-admin
+            console.log('[LoginComponent] Redirection User vers /profile (défaut)');
+            this.router.navigate(['/profile']);
+          }
+        }
+        // === Fin Logique de Redirection ===
 
       },
       error: (err: Error | any) => {
         this.isLoading = false;
         this.errorMessage = err?.message || 'Une erreur est survenue lors de la connexion.';
-        console.error('Erreur connexion:', err);
-        // if (this.errorMessage) { // Affichage notification commenté
-        //   this.notificationService.showError(this.errorMessage);
-        // }
+        console.error('[LoginComponent] Erreur connexion:', err);
+        if (this.errorMessage) {
+          this.notificationService.showError(this.errorMessage);
+        }
       }
     });
   }

@@ -1,0 +1,183 @@
+<!-- src/app/features/order/pages/cart-order/cart-order.component.html -->
+<!-- Utilisation des classes définies dans le SCSS autonome -->
+<div class="order-page-container py-4" [class.form-submitted]="orderForm.touched || orderForm.dirty">
+
+  <!-- En-tête de la page -->
+  <div class="order-page-header text-center mb-4"> <!-- text-center est ok, ou à redéfinir -->
+    <h2>Finaliser ma Commande</h2>
+    <!-- Utilisation classe 'lead' ciblée dans le SCSS -->
+    <p class="lead">Vérifiez les articles et complétez vos informations pour valider.</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <ng-container *ngIf="totalItemsCount() > 0; else emptyCartRedirect">
+    <!-- Utilisation de .row-grid au lieu de .row -->
+    <div class="row-grid">
+
+      <!-- Colonne Récapitulatif Panier -->
+      <!-- Utilisation de .col-summary et .order-lg-last -->
+      <div class="col-summary order-lg-last">
+        <!-- Utilisation de .summary-card et .sticky-top (si géré par Bootstrap ou CSS custom) -->
+        <div class="summary-card shadow-sm sticky-top" style="top: 20px;"> <!-- shadow-sm est Bootstrap, à remplacer ou styler si besoin -->
+           <!-- Utilisation de .card-header -->
+           <div class="card-header">
+              <!-- Utilisation de <i> comme dans le SCSS -->
+              <h3 class="mb-0 fs-5"><i></i>Récapitulatif du panier</h3> <!-- mb-0, fs-5 sont BS -->
+           </div>
+           <!-- Utilisation de .cart-summary-list -->
+           <ul class="cart-summary-list">
+              <!-- Utilisation des classes .item-details, .item-title, .item-meta, .item-subtotal -->
+              <li *ngFor="let item of cartItems(); trackBy: trackByCartItem">
+                 <div class="item-details">
+                    <h6 class="item-title">
+                        <!-- text-decoration-none, text-body sont BS -->
+                        <a [routerLink]="['/books', item.bookId]" target="_blank" title="Voir détails de {{item.title}} (nouvel onglet)">{{ item.title }}</a>
+                    </h6>
+                    <small class="item-meta">Qté : {{ item.quantity }} × {{ item.price | currency:'EUR':'symbol' }}</small>
+                 </div>
+                 <span class="item-subtotal">{{ (item.quantity * item.price) | currency:'EUR':'symbol' }}</span>
+              </li>
+              <!-- Utilisation de .total-row -->
+              <li class="total-row">
+                 <span>Total</span>
+                 <!-- text-success est BS -->
+                 <strong class="text-success">{{ totalAmount() | currency:'EUR':'symbol':'1.2-2':'fr' }}</strong>
+              </li>
+           </ul>
+        </div>
+      </div>
+
+      <!-- Colonne Formulaire Commande -->
+      <!-- Utilisation de .col-form et .order-lg-first -->
+      <div class="col-form order-lg-first">
+         <!-- Utilisation de .form-card -->
+         <div class="form-card shadow-sm"> <!-- shadow-sm est BS -->
+             <!-- Utilisation de .card-header -->
+             <div class="card-header">
+                 <!-- Utilisation de <i> -->
+                 <h3 class="mb-0 fs-5"><i></i>Vos informations</h3> <!-- mb-0, fs-5 sont BS -->
+             </div>
+             <!-- Utilisation de .card-body -->
+             <div class="card-body position-relative"> <!-- position-relative est ok -->
+
+                 <!-- === Overlay de Chargement (utilise la classe .loading-overlay du SCSS) === -->
+                 <div *ngIf="isLoadingUser" class="loading-overlay" role="status" aria-live="polite">
+                      <!-- Utilisation de .spinner-border (stylé dans SCSS) -->
+                      <div class="spinner-border" role="status">
+                         <span class="visually-hidden">Chargement...</span> <!-- visually-hidden est BS -->
+                      </div>
+                      <!-- Utilisation de .loading-text -->
+                      <span class="loading-text">Chargement de vos informations...</span>
+                   </div>
+                 <!-- ============================================================ -->
+
+                <form [formGroup]="orderForm" (ngSubmit)="onSubmit()" novalidate>
+
+                  <fieldset>
+                    <!-- Utilisation de .form-section-title -->
+                    <legend class="form-section-title">Contact</legend>
+                    <!-- Utilisation de .row-grid ou styler .row de BS -->
+                    <div class="row"> <!-- Garder .row ou utiliser .row-grid si nécessaire -->
+                       <!-- Utilisation de col-md-6 (BS) ou créer des classes custom -->
+                       <div class="col-md-6 mb-3 position-relative">
+                          <!-- Utilisation de .form-label -->
+                          <label for="customerName" class="form-label">Nom complet <span class="text-danger">*</span></label>
+                          <!-- Utilisation de .form-control (stylé dans SCSS) -->
+                          <input type="text" id="customerName" formControlName="customerName" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('customerName'), 'is-valid': getControl('customerName')?.valid && (getControl('customerName')?.touched || getControl('customerName')?.dirty) }" required aria-describedby="customerNameHelp">
+                          <!-- Utilisation de .invalid-feedback -->
+                          <div id="customerNameHelp" *ngIf="isInvalid('customerName')" class="invalid-feedback">
+                            {{ getErrorMessage('customerName') }}
+                          </div>
+                       </div>
+                       <div class="col-md-6 mb-3 position-relative">
+                          <label for="customerEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                          <input type="email" id="customerEmail" formControlName="customerEmail" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('customerEmail'), 'is-valid': getControl('customerEmail')?.valid && (getControl('customerEmail')?.touched || getControl('customerEmail')?.dirty) }" required aria-describedby="customerEmailHelp">
+                          <div id="customerEmailHelp" *ngIf="isInvalid('customerEmail')" class="invalid-feedback">
+                            {{ getErrorMessage('customerEmail') }}
+                          </div>
+                       </div>
+                     </div>
+                  </fieldset>
+
+                  <!-- Utilisation de .form-divider -->
+                  <hr class="my-4 form-divider"> <!-- my-4 est BS -->
+
+                  <fieldset formGroupName="shippingAddress">
+                    <legend class="form-section-title">Adresse de Livraison</legend>
+                    <div class="mb-3 position-relative"> <!-- mb-3, position-relative ok -->
+                      <label for="street" class="form-label">Adresse (N° et rue) <span class="text-danger">*</span></label>
+                      <input type="text" id="street" formControlName="street" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('street', 'shippingAddress'), 'is-valid': getControl('street', 'shippingAddress')?.valid && (getControl('street', 'shippingAddress')?.touched || getControl('street', 'shippingAddress')?.dirty) }" required aria-describedby="streetHelp">
+                      <div id="streetHelp" *ngIf="isInvalid('street', 'shippingAddress')" class="invalid-feedback">
+                        {{ getErrorMessage('street', 'shippingAddress') }}
+                      </div>
+                    </div>
+                    <!-- Utilisation de .row (BS) ou .row-grid -->
+                    <div class="row">
+                      <!-- Utilisation des classes col-* (BS) -->
+                      <div class="col-md-5 col-lg-4 mb-3 position-relative">
+                        <label for="zipCode" class="form-label">Code Postal <span class="text-danger">*</span></label>
+                        <input type="text" inputmode="numeric" id="zipCode" formControlName="zipCode" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('zipCode', 'shippingAddress'), 'is-valid': getControl('zipCode', 'shippingAddress')?.valid && (getControl('zipCode', 'shippingAddress')?.touched || getControl('zipCode', 'shippingAddress')?.dirty) }" required pattern="\d{5}" aria-describedby="zipCodeHelp">
+                        <div id="zipCodeHelp" *ngIf="isInvalid('zipCode', 'shippingAddress')" class="invalid-feedback">
+                          {{ getErrorMessage('zipCode', 'shippingAddress') }}
+                        </div>
+                      </div>
+                      <div class="col-md-7 col-lg-8 mb-3 position-relative">
+                        <label for="city" class="form-label">Ville <span class="text-danger">*</span></label>
+                        <input type="text" id="city" formControlName="city" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('city', 'shippingAddress'), 'is-valid': getControl('city', 'shippingAddress')?.valid && (getControl('city', 'shippingAddress')?.touched || getControl('city', 'shippingAddress')?.dirty) }" required aria-describedby="cityHelp">
+                         <div id="cityHelp" *ngIf="isInvalid('city', 'shippingAddress')" class="invalid-feedback">
+                          {{ getErrorMessage('city', 'shippingAddress') }}
+                        </div>
+                      </div>
+                    </div>
+                     <div class="mb-3 position-relative">
+                        <label for="country" class="form-label">Pays <span class="text-danger">*</span></label>
+                        <input type="text" id="country" formControlName="country" class="form-control" [ngClass]="{ 'is-invalid': isInvalid('country', 'shippingAddress'), 'is-valid': getControl('country', 'shippingAddress')?.valid && (getControl('country', 'shippingAddress')?.touched || getControl('country', 'shippingAddress')?.dirty) }" required aria-describedby="countryHelp">
+                        <div id="countryHelp" *ngIf="isInvalid('country', 'shippingAddress')" class="invalid-feedback">
+                          {{ getErrorMessage('country', 'shippingAddress') }}
+                        </div>
+                     </div>
+                  </fieldset>
+
+                  <hr class="my-4 form-divider">
+
+                  <!-- Affichage Erreur Générale - Utilisation de .validation-summary -->
+                  <div *ngIf="errorMessage && !isSubmitting" class="validation-summary" role="alert">
+                    <!-- Utilisation de <i> -->
+                    <i></i> <!-- Ajouter icône si besoin via CSS ou contenu -->
+                    <div>{{ errorMessage }}</div>
+                  </div>
+
+                  <!-- Boutons d'action - Utilisation de .form-actions -->
+                  <!-- Ajouter les classes .order-sm-* si besoin pour l'ordre mobile -->
+                  <div class="form-actions">
+                    <!-- Utilisation de .btn et .btn-cancel -->
+                    <a routerLink="/cart" class="btn btn-cancel order-sm-1" [class.disabled]="isSubmitting">
+                       <i></i> Retour au Panier <!-- Ajouter icône si besoin -->
+                    </a>
+                    <!-- Utilisation de .btn et .btn-submit -->
+                    <button type="submit" class="btn btn-submit order-sm-2" [disabled]="!orderForm.valid || isSubmitting || isLoadingUser">
+                      <!-- Utilisation de .spinner-border -->
+                      <span *ngIf="isSubmitting" class="spinner-border" role="status" aria-hidden="true"></span>
+                      <i *ngIf="!isSubmitting"></i> <!-- Ajouter icône si besoin -->
+                      {{ isSubmitting ? 'Traitement...' : 'Confirmer et Commander' }}
+                    </button>
+                  </div>
+
+                </form> <!-- Fin Formulaire -->
+             </div> <!-- Fin card-body -->
+           </div> <!-- Fin form-card -->
+        </div> <!-- Fin Colonne Formulaire -->
+
+      </div> <!-- Fin row-grid -->
+    </ng-container>
+
+<!-- Affichage si panier vide -->
+<ng-template #emptyCartRedirect>
+    <!-- Utilisation de .empty-cart-message -->
+    <div class="empty-cart-message" role="alert">
+        <i></i> <!-- Ajouter icône si besoin -->
+        Votre panier est vide. Vous allez être redirigé...
+    </div>
+</ng-template>
+
+</div> <!-- Fin .order-page-container -->

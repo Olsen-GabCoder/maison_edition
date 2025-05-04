@@ -1,92 +1,266 @@
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding-top: 20px;
+// --- Variables de Style "Néo-Glass Aurora" ---
+
+// Palette & Fond Aurora (Exemple - à personnaliser !)
+$aurora-color-1: #ffafbd; // Rose doux
+$aurora-color-2: #ffc3a0; // Pêche
+$aurora-color-3: #a0c1ff; // Bleu ciel doux
+$aurora-color-4: #b0f3f1; // Cyan pâle
+$aurora-bg-animation-speed: 40s;
+
+// Couleurs "Néo-Glass"
+$card-bg-color: rgba(255, 255, 255, 0.45); // Blanc translucide clé
+$card-border-color: rgba(255, 255, 255, 0.6); // Bordure lumineuse subtile
+$card-shadow-light-color: rgba(255, 255, 255, 0.8); // Ombre claire (Néomorphisme)
+$card-shadow-dark-color: rgba(100, 100, 150, 0.15); // Ombre foncée douce (Néomorphisme)
+$text-color-primary: #1e2a3b; // Texte principal sombre pour contraste
+$text-color-secondary: rgba(30, 42, 59, 0.7); // Texte secondaire plus doux
+$text-color-accent: #3d5af1; // Un bleu vif pour les chiffres/liens pour ressortir
+
+// Typographie
+$admin-font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; // Police plus ronde/moderne
+$admin-base-font-size: 1rem;
+
+// Dimensions & Effets
+$admin-spacing-unit: 1.7rem;
+$card-padding: $admin-spacing-unit * 1.2;
+$grid-gap: $admin-spacing-unit * 1.2;
+$card-border-radius: 18px; // Arrondi prononcé
+$card-blur-amount: 15px; // Intensité du flou Glassmorphism
+
+// Ombres Néomorphiques (subtiles sur fond transparent)
+$neumorphic-shadow:
+  6px 6px 12px $card-shadow-dark-color,
+  -6px -6px 12px $card-shadow-light-color;
+$neumorphic-shadow-hover:
+  8px 8px 16px $card-shadow-dark-color,
+  -8px -8px 16px $card-shadow-light-color,
+  inset 1px 1px 2px $card-shadow-light-color, // Léger inset au survol
+  inset -1px -1px 2px $card-shadow-dark-color;
+
+// Transitions
+$admin-transition-speed: 0.4s;
+$admin-transition-easing: cubic-bezier(0.68, -0.55, 0.27, 1.55); // Easing avec "rebond"
+
+// --- Styles Globaux ---
+body {
+  font-family: $admin-font-family;
+  background-color: mix($aurora-color-1, $aurora-color-3, 50%); // Couleur de base simple
+  color: $text-color-primary;
+  line-height: 1.6;
+  position: relative; // Pour le pseudo-élément de fond
+  overflow-x: hidden; // Empêche le scroll horizontal dû au fond
+}
+
+// --- Fond Aurora Animé ---
+body::before {
+  content: "";
+  position: fixed; // Fixe pour rester en place au scroll
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1; // Derrière tout le contenu
+  background:
+    radial-gradient(circle at 10% 20%, $aurora-color-1, transparent 50%),
+    radial-gradient(circle at 80% 15%, $aurora-color-2, transparent 50%),
+    radial-gradient(circle at 25% 75%, $aurora-color-3, transparent 50%),
+    radial-gradient(circle at 90% 85%, $aurora-color-4, transparent 40%);
+  background-size: 200% 200%; // Taille plus grande pour permettre l'animation
+  opacity: 0.6; // Réduit l'intensité pour ne pas distraire
+  animation: aurora-flow $aurora-bg-animation-speed linear infinite;
+}
+
+@keyframes aurora-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+// --- Styles Spécifiques au Dashboard ---
+
+.admin-page-header {
+  margin-bottom: $admin-spacing-unit * 2;
+  padding: $admin-spacing-unit 0;
+  text-align: center; // Centre l'en-tête pour un look différent
+  position: relative; // Pour s'assurer qu'il est au-dessus du fond
+  z-index: 1;
+
+  h2 {
+    font-size: $admin-base-font-size * 2.2;
+    font-weight: 700;
+    margin-bottom: $admin-spacing-unit * 0.4;
+    color: $text-color-primary;
+    // Effet subtil sur le titre
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
   }
-  
-  .dashboard-card {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow 0.3s ease;
-  
-    &:hover {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+
+  p {
+    font-size: $admin-base-font-size * 1.1;
+    color: $text-color-secondary;
+    max-width: 600px; // Limite la largeur pour la lisibilité
+    margin: 0 auto;
+  }
+}
+
+.admin-page-content.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: $grid-gap;
+  padding: 0 $admin-spacing-unit; // Ajoute un peu de padding latéral
+  position: relative; // Pour s'assurer qu'il est au-dessus du fond
+  z-index: 1;
+}
+
+.dashboard-card {
+  background: $card-bg-color;
+  border-radius: $card-border-radius;
+  border: 1px solid $card-border-color;
+  padding: $card-padding;
+  box-shadow: $neumorphic-shadow;
+  backdrop-filter: blur($card-blur-amount);
+  -webkit-backdrop-filter: blur($card-blur-amount); // Support Safari
+  display: flex;
+  flex-direction: column;
+  transition: all $admin-transition-speed $admin-transition-easing;
+  overflow: hidden; // Important pour les ombres inset au survol
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02); // Effet plus prononcé
+    box-shadow: $neumorphic-shadow-hover;
+    background: rgba(255, 255, 255, 0.55); // Légèrement plus opaque au survol
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+
+  h3 {
+    font-size: $admin-base-font-size * 1.25;
+    font-weight: 600;
+    margin: 0 0 $admin-spacing-unit;
+    color: $text-color-primary;
+    text-align: center;
+    padding-bottom: $admin-spacing-unit * 0.6;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3); // Bordure interne très subtile
+    position: relative; // Pour le ::before décoratif
+    letter-spacing: 0.5px;
+
+    // Petit trait décoratif
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: -1px; // Aligné avec la bordure
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(90deg, $aurora-color-2, $aurora-color-3); // Gradient lié aux couleurs Aurora
+      border-radius: 3px;
+      opacity: 0.7;
+      transition: width $admin-transition-speed $admin-transition-easing;
     }
-  
-    &.placeholder {
-      background-color: #f8f9fa;
-  
-      .card-number {
-        color: #adb5bd;
-      }
-  
-      .card-actions span {
-        color: #6c757d;
-        font-style: italic;
-      }
-    }
-  
-    h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      font-size: 1.15em;
-      font-weight: 600;
-      color: #495057;
-      border-bottom: 1px solid #dee2e6;
-      padding-bottom: 10px;
-    }
-  
-    .card-content {
-      flex-grow: 1;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-  
+  }
+
+  &:hover h3::before {
+    width: 60px; // Anime le trait au survol de la carte
+    opacity: 1;
+  }
+
+  .card-content {
+    flex-grow: 1;
+    margin-bottom: $admin-spacing-unit * 1.2;
+    text-align: center;
+
     .card-number {
-      font-size: 2.8em;
-      font-weight: 700;
-      color: #0056b3;
-      margin: 10px 0 5px 0;
+      font-size: $admin-base-font-size * 3.5; // Très grand
+      font-weight: 800; // Très gras
+      color: $text-color-accent;
+      margin-bottom: $admin-spacing-unit * 0.2;
       line-height: 1.1;
+      display: block;
+      transition: transform 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); // Effet rebondissant
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
-  
+
     .card-label {
-      font-size: 0.95em;
-      color: #6c757d;
-      margin: 0;
+      font-size: $admin-base-font-size * 0.8; // Plus petit
+      color: $text-color-secondary;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+      margin-bottom: 0;
     }
-  
-    .card-actions {
-      margin-top: auto;
-      padding-top: 15px;
-      border-top: 1px solid #dee2e6;
-      text-align: center;
-  
-      a {
-        color: #0069d9;
-        text-decoration: none;
-        font-size: 0.9em;
-        font-weight: 500;
-        padding: 5px 10px;
-        border-radius: 4px;
-        transition: background-color 0.2s ease, color 0.2s ease;
-  
-        &:hover {
-          background-color: #e9ecef;
-          color: #0056b3;
+  }
+
+  &:hover .card-content .card-number {
+     transform: scale(1.05); // Anime le chiffre au survol
+  }
+
+
+  .card-actions {
+    margin-top: auto;
+    padding-top: $admin-spacing-unit * 0.8;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    text-align: center;
+
+    a {
+      color: $text-color-accent;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: $admin-base-font-size;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-radius: $card-border-radius / 2;
+      transition: all $admin-transition-speed $admin-transition-easing;
+      position: relative;
+      overflow: hidden; // Pour l'effet de fond au survol
+
+      // Style bouton "Néo-Glass" subtil
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 2px 2px 4px rgba(100, 100, 150, 0.1),
+                 -2px -2px 4px rgba(255, 255, 255, 0.5);
+
+      // Icône flèche (ou utiliser une vraie icône)
+      &::after {
+        content: '›'; // Flèche simple
+        font-weight: bold;
+        margin-left: 8px;
+        transition: transform $admin-transition-speed $admin-transition-easing;
+      }
+
+      &:hover,
+      &:focus {
+        color: lighten($text-color-accent, 10%);
+        background: rgba(255, 255, 255, 0.3);
+        box-shadow: 3px 3px 6px rgba(100, 100, 150, 0.15),
+                   -3px -3px 6px rgba(255, 255, 255, 0.6);
+        transform: scale(1.03); // Léger grossissement du bouton
+
+        &::after {
+          transform: translateX(3px);
         }
       }
-  
-      span {
-        font-size: 0.9em;
-        color: #6c757d;
-      }
     }
   }
-  
+}
+
+// --- Media Queries (Adaptations nécessaires pour ce style plus complexe) ---
+@media (max-width: 768px) {
+  $card-blur-amount: 10px; // Réduire le flou si performances basses
+  .dashboard-card {
+     backdrop-filter: blur($card-blur-amount);
+     -webkit-backdrop-filter: blur($card-blur-amount);
+  }
+  .admin-page-header h2 { font-size: $admin-base-font-size * 1.8; }
+  .dashboard-card .card-content .card-number { font-size: $admin-base-font-size * 3; }
+}
+
+@media (max-width: 576px) {
+  .admin-page-content.dashboard-grid {
+    grid-template-columns: 1fr; // Passe en une colonne
+    gap: $grid-gap * 0.8;
+    padding: 0 $admin-spacing-unit * 0.5;
+  }
+  .dashboard-card {
+     border-radius: $card-border-radius * 0.8;
+     padding: $card-padding * 0.8;
+  }
+  // Simplifier les ombres si besoin pour perf mobile
+  // .dashboard-card { box-shadow: 0 4px 10px rgba(100, 100, 150, 0.15); }
+}

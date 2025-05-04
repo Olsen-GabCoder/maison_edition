@@ -1,67 +1,99 @@
-<!-- src/app/pages/book-detail/book-detail.component.html -->
+<!-- src/app/pages/book-detail/book-detail.component.html (COMPLET - Actions masquées pour Admin) -->
 <div class="book-detail-page">
   <!-- Indicateur de chargement -->
   <div *ngIf="isLoading" class="loading-state">
-    <div class="spinner" role="status">
-      <span class="visually-hidden">Chargement...</span>
-    </div>
+    <div class="spinner" role="status"><span class="visually-hidden">Chargement...</span></div>
+  </div>
+
+  <!-- Message d'erreur global -->
+  <div *ngIf="errorMessage && !isLoading" class="error-state alert alert-danger">
+      {{ errorMessage }} <hr>
+      <a routerLink="/" class="btn btn-secondary">Retour à l’accueil</a>
   </div>
 
   <!-- Contenu principal -->
   <ng-container *ngIf="!isLoading && !errorMessage">
-    <ng-container *ngIf="(book$ | async) as book; else notFound">
-
+    <ng-container *ngIf="(book$ | async) as book; else notFoundViaSubject">
       <main class="book-content">
         <div class="layout">
-
           <!-- Couverture -->
           <div class="book-cover">
-            <img
-              [src]="book.coverUrl || 'assets/images/placeholder.png'"
-              [alt]="'Couverture du livre : ' + book.title"
-              class="cover-img"
-            />
+            <img [src]="book.coverUrl || 'assets/images/placeholder.png'" [alt]="'Couverture du livre : ' + book.title" class="cover-img" />
           </div>
 
           <!-- Détails du livre -->
           <div class="book-info">
+            <!-- Header -->
             <header class="book-header">
-              <div class="book-category" *ngIf="book.category">{{ book.category }}</div>
-              <h1 class="book-title">{{ book.title }}</h1>
-              <h2 class="book-author">par {{ book.author }}</h2>
+               <div class="book-category" *ngIf="book.category">{{ book.category }}</div>
+               <h1 class="book-title">{{ book.title }}</h1>
+               <h2 class="book-author">par {{ book.author }}</h2>
             </header>
 
+             <!-- Résumé -->
             <section class="summary-section">
               <h3>Résumé</h3>
               <p *ngIf="book.summary; else noSummary">{{ book.summary }}</p>
-              <ng-template #noSummary>
-                <p class="summary-placeholder">Aucun résumé disponible.</p>
-              </ng-template>
+              <ng-template #noSummary><p class="summary-placeholder">Aucun résumé disponible.</p></ng-template>
             </section>
 
+            <!-- Section Achat/Favoris -->
             <section class="purchase-section">
               <div class="price">Prix : <span>{{ book.price | currency:'EUR':'symbol':'1.2-2':'fr' }}</span></div>
-              <div class="buttons">
-                <button class="btn primary" (click)="buyBook(book.id)">Acheter</button>
-                <button class="btn secondary" (click)="addToLibrary(book.id)">Ajouter aux favoris</button>
-              </div>
-            </section>
 
+              <!-- === CONDITION AJOUTÉE ICI === -->
+              <!-- Afficher la zone d'actions seulement si l'utilisateur N'EST PAS admin -->
+              <!-- Nécessite que currentUser$ soit exposé par le composant TS -->
+              <ng-container *ngIf="(currentUser$ | async)?.role !== 'admin'">
+                <div class="actions-container">
+                    <!-- Champ Quantité -->
+                    <div class="quantity-control">
+                        <label for="quantity" class="form-label visually-hidden">Quantité</label>
+                        <input type="number"
+                               id="quantity"
+                               class="form-control quantity-input"
+                               [ngModel]="quantityToAdd()"
+                               (ngModelChange)="quantityToAdd.set($event)"
+                               (change)="validateQuantity()"
+                               min="1"
+                               aria-label="Quantité">
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="buttons">
+                        <!-- Bouton Ajouter au Panier -->
+                        <button class="btn primary btn-add-to-cart" (click)="addToCart()">
+                            <i class="bi bi-cart-plus"></i> Ajouter au panier
+                        </button>
+
+                        <!-- Bouton Favoris -->
+                        <button class="btn secondary btn-favorite"
+                                (click)="toggleFavorite()"
+                                [class.is-favorite]="isFavorite$ | async"
+                                title="{{ (isFavorite$ | async) ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+                           <i class="bi {{ (isFavorite$ | async) ? 'bi-heart-fill' : 'bi-heart' }}"></i>
+                        </button>
+                    </div>
+                </div> <!-- Fin actions-container -->
+              </ng-container>
+               <!-- === FIN CONDITION === -->
+
+            </section> <!-- Fin purchase-section -->
+
+            <!-- Footer -->
             <footer class="footer">
-              <button class="btn-link" (click)="goBack()">&larr; Voir d'autres livres</button>
+              <button class="btn-link" (click)="goBack()">← Voir d'autres livres</button>
             </footer>
-          </div>
-
-        </div>
+          </div> <!-- Fin book-info -->
+        </div> <!-- Fin layout -->
       </main>
-
     </ng-container>
-
-    <ng-template #notFound>
+    <!-- Template notFound -->
+    <ng-template #notFoundViaSubject>
       <section class="not-found">
         <p>Ce livre n’a pas été trouvé.</p>
-        <a routerLink="/" class="btn">Retour à l’accueil</a>
+        <a routerLink="/" class="btn btn-secondary">Retour à l’accueil</a>
       </section>
     </ng-template>
   </ng-container>
-</div>
+</div> <!-- Fin book-detail-page -->

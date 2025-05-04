@@ -1,0 +1,157 @@
+<h2>Mon Profil</h2>
+
+<!-- Conteneur principal affiché si l'utilisateur est chargé -->
+<div *ngIf="currentUser$ | async as user" class="profile-container">
+
+  <p>Bienvenue, {{ getUserFullName(user) }} !</p>
+
+  <!-- === Section Informations du compte (Affichage seul) === -->
+  <div class="info-section read-only">
+    <h3>Informations actuelles</h3>
+    <p><strong>Email :</strong> {{ user.email }}</p>
+    <p><strong>Prénom :</strong> {{ user.firstName || 'Non renseigné' }}</p>
+    <p><strong>Nom :</strong> {{ user.lastName || 'Non renseigné' }}</p>
+    <p><strong>Rôle :</strong> {{ user.role }}</p>
+  </div>
+
+  <hr>
+
+  <!-- === Section Modification du Profil (Formulaire) === -->
+  <div class="info-section edit-form">
+    <h3>Modifier mes informations</h3>
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" novalidate>
+      <!-- Email (non modifiable) -->
+      <div class="form-group mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" id="email" class="form-control" formControlName="email" readonly>
+      </div>
+      <!-- Prénom -->
+      <div class="form-group mb-3">
+        <label for="firstName" class="form-label">Prénom</label>
+        <input type="text" id="firstName" class="form-control"
+               formControlName="firstName"
+               [class.is-invalid]="firstName?.invalid && (firstName?.dirty || firstName?.touched)">
+        <div *ngIf="firstName?.invalid && (firstName?.dirty || firstName?.touched)" class="invalid-feedback">
+          <div *ngIf="firstName?.errors?.['maxlength']">Le prénom ne doit pas dépasser 50 caractères.</div>
+        </div>
+      </div>
+      <!-- Nom -->
+      <div class="form-group mb-3">
+        <label for="lastName" class="form-label">Nom</label>
+        <input type="text" id="lastName" class="form-control"
+               formControlName="lastName"
+               [class.is-invalid]="lastName?.invalid && (lastName?.dirty || lastName?.touched)">
+        <div *ngIf="lastName?.invalid && (lastName?.dirty || lastName?.touched)" class="invalid-feedback">
+          <div *ngIf="lastName?.errors?.['maxlength']">Le nom ne doit pas dépasser 50 caractères.</div>
+        </div>
+      </div>
+
+      <!-- Message d'erreur global -->
+      <div *ngIf="profileErrorMessage" class="alert alert-danger mt-3">
+        {{ profileErrorMessage }}
+      </div>
+
+      <!-- Bouton de soumission -->
+      <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary"
+                [disabled]="isLoadingProfile || profileForm.invalid || !profileForm.dirty">
+          <span *ngIf="isLoadingProfile" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          {{ isLoadingProfile ? 'Sauvegarde...' : 'Enregistrer les modifications' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <hr>
+
+  <!-- === Section Mes Commandes === -->
+  <div class="orders-section">
+    <h3>Mes Commandes</h3>
+    <ng-container *ngIf="(userOrders$ | async) as orders; else loadingOrders">
+      <div *ngIf="orders.length > 0; else noOrders" class="orders-list table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th># Commande</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of orders">
+              <td>{{ order.id }}</td>
+              <td>{{ order.orderDate | date:'dd/MM/yyyy HH:mm':'fr' }}</td>
+              <td>{{ order.status }}</td>
+              <td>{{ order.totalAmount | currency:'EUR':'symbol':'1.2-2':'fr' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noOrders>
+        <p>Vous n'avez pas encore passé de commande.</p>
+      </ng-template>
+    </ng-container>
+    <ng-template #loadingOrders>
+      <p>Chargement de l'historique des commandes...</p>
+    </ng-template>
+  </div>
+
+  <hr>
+
+  <!-- === Section Mes Favoris === -->
+  <div class="favorites-section">
+    <h3>Mes Favoris</h3>
+
+    <!-- Chargement -->
+    <div *ngIf="isLoadingFavorites" class="loading-favorites">
+      <p>Chargement des favoris...</p>
+    </div>
+
+    <!-- Contenu après chargement -->
+    <ng-container *ngIf="!isLoadingFavorites">
+      <ng-container *ngIf="(favoriteBooks$ | async) as favBooks">
+
+        <!-- Affichage des favoris -->
+        <div *ngIf="favBooks.length > 0; else noFavorites" class="favorites-list">
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+            <div *ngFor="let book of favBooks" class="col">
+              <div class="card h-100 favorite-card">
+                <a [routerLink]="['/books', book.id]" class="card-link" [title]="'Voir détails de ' + book.title">
+                  <img [src]="book.coverUrl || 'assets/images/placeholder.png'"
+                       class="card-img-top favorite-cover"
+                       [alt]="'Couverture ' + book.title">
+                </a>
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <a [routerLink]="['/books', book.id]" [title]="'Voir détails de ' + book.title">{{ book.title }}</a>
+                  </h5>
+                  <p class="card-text favorite-author">{{ book.author }}</p>
+                </div>
+                <div class="card-footer favorite-actions">
+                  <button class="btn btn-sm btn-outline-danger w-100"
+                          (click)="removeFromFavorites(book.id)"
+                          title="Retirer ce livre des favoris">
+                    <i class="bi bi-trash"></i> Retirer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aucun favori -->
+        <ng-template #noFavorites>
+          <p>Vous n'avez pas encore ajouté de livre à vos favoris.</p>
+        </ng-template>
+
+      </ng-container>
+    </ng-container>
+  </div>
+
+</div>
+
+<!-- Si l'utilisateur n'est pas encore chargé -->
+<div *ngIf="!(currentUser$ | async)">
+  <p>Chargement des informations utilisateur...</p>
+</div>

@@ -1,0 +1,317 @@
+.cart-page-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Police plus moderne */
+    max-width: 1024px; /* Légèrement plus large pour plus d'espace */
+    margin: 40px auto; /* Plus de marge verticale */
+    padding: 30px;
+    background-color: #f4f6f8; /* Fond gris très clair et moderne */
+    border-radius: 12px; /* Bords plus arrondis */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Ombre plus prononcée et douce */
+    overflow: hidden; /* Pour gérer les éléments flottants internes */
+  
+    h2 {
+      color: #2c3e50; /* Couleur de titre plus profonde */
+      text-align: left;
+      margin-bottom: 30px;
+      font-weight: 700; /* Gras plus intense */
+      letter-spacing: 0.8px; /* Espacement des lettres subtil */
+      border-bottom: 2px solid #e0e6ed; /* Ligne de séparation sous le titre */
+      padding-bottom: 15px;
+    }
+  
+    .card {
+      border: none; /* Suppression de la bordure par défaut */
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Ombre légèrement plus présente */
+      background-color: #fff;
+      overflow: hidden; /* Pour les éléments internes arrondis */
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Animation au survol */
+  
+      &:hover {
+        transform: scale(1.01); /* Léger agrandissement au survol */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+      }
+  
+      .row.g-0 {
+        align-items: center;
+        display: flex;
+        padding: 15px; /* Ajout de padding interne au row */
+      }
+  
+      // Colonne pour l'image
+      .col-md-2 {
+        flex: 0 0 100px; /* Légèrement plus large pour l'image */
+        padding: 15px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+  
+        a {
+          display: block;
+          max-width: 90px; /* Légère augmentation de la taille max */
+          margin: 0 auto;
+          border-radius: 8px; /* Bords arrondis pour l'image */
+          overflow: hidden; /* Pour que l'image respecte les bords */
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* Légère ombre sur l'image */
+        }
+  
+        img {
+          display: block;
+          width: 100%;
+          height: auto;
+          object-fit: cover; /* Remplissage avec découpage si nécessaire */
+          border-radius: inherit; /* Hérite du border-radius du parent a */
+          transition: transform 0.3s ease-in-out; /* Zoom subtil au survol de l'article */
+  
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+      }
+  
+      // Colonne pour le titre et potentiellement d'autres infos
+      .col-md-4 {
+        flex-grow: 1;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+  
+        .card-body {
+          padding: 0;
+  
+          .card-title {
+            font-size: 1.1rem; /* Titre légèrement plus grand */
+            margin-bottom: 8px;
+            color: #34495e; /* Couleur de titre secondaire */
+            font-weight: 600;
+  
+            a {
+              text-decoration: none;
+              color: inherit;
+              transition: color 0.2s ease-in-out;
+  
+              &:hover {
+                text-decoration: underline;
+                color: #007bff;
+              }
+            }
+          }
+  
+          .text-muted {
+            font-size: 0.9rem;
+            color: #7f8c8d; /* Gris plus clair */
+            margin-bottom: 4px;
+          }
+  
+          .item-details-extra {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 6px;
+          }
+        }
+      }
+  
+      // Colonne pour le prix unitaire
+      .col-md-2.text-center.item-price {
+        flex: 0 0 100px;
+        padding: 15px;
+        text-align: right;
+        font-weight: 600;
+        color: #27ae60; /* Vert plus vif */
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+  
+        &::before {
+          content: "Prix : "; /* Ajout de texte avant le prix */
+          font-weight: normal;
+          color: #7f8c8d;
+          margin-right: 5px;
+          font-size: 0.9rem;
+        }
+      }
+  
+      // Colonne pour la quantité
+      .col-md-2.text-center.item-quantity {
+        flex: 0 0 120px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+  
+        label {
+          margin-bottom: 8px;
+          font-size: 0.9rem;
+          color: #555;
+          font-weight: 500;
+        }
+  
+        .form-control-sm {
+          width: 60px; /* Légèrement plus large */
+          text-align: center;
+          border: 1px solid #bdc3c7; /* Bordure plus claire */
+          border-radius: 6px;
+          padding: 8px;
+          font-size: 0.9rem;
+          transition: border-color 0.2s ease-in-out;
+  
+          &:focus {
+            border-color: #3498db; /* Bordure bleue au focus */
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+          }
+        }
+      }
+  
+      // Colonne pour le sous-total
+      .col-md-2.text-center.item-subtotal {
+        flex: 0 0 120px;
+        padding: 15px;
+        text-align: right;
+        font-weight: 700;
+        color: #3498db; /* Bleu plus attrayant */
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+  
+        &::before {
+          content: "Sous-total : "; /* Ajout de texte avant le sous-total */
+          font-weight: normal;
+          color: #7f8c8d;
+          margin-right: 5px;
+          font-size: 0.9rem;
+        }
+      }
+  
+      // Colonne pour le bouton de suppression
+      .col-md-2.text-center.item-remove {
+        flex: 0 0 70px;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+  
+        .btn-sm {
+          padding: 8px 12px;
+          font-size: 0.8rem;
+          border-radius: 6px;
+          background-color: #e74c3c; /* Rouge plus vif */
+          color: white;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  
+          &:hover {
+            background-color: #c0392b; /* Rouge plus foncé au survol */
+            transform: scale(1.05);
+          }
+  
+          i {
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+  
+    .col-lg-4 {
+      .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        padding: 20px;
+  
+        .card-title {
+          font-size: 1.2rem;
+          color: #2c3e50;
+          margin-bottom: 20px;
+          font-weight: 700;
+          border-bottom: 2px solid #e0e6ed;
+          padding-bottom: 10px;
+        }
+  
+        .list-group {
+          .list-group-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+  
+            &:last-child {
+              border-bottom: none;
+              padding-top: 20px;
+              font-size: 1.1rem;
+              font-weight: bold;
+              color: #2c3e50;
+            }
+  
+            span:last-child {
+              font-weight: 600;
+              color: #27ae60;
+            }
+          }
+        }
+  
+        .btn {
+          font-size: 0.9rem;
+          padding: 12px 20px;
+          border-radius: 8px;
+          transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+          width: 100%;
+          display: block;
+          text-align: center;
+        }
+  
+        .btn-outline-danger {
+          border-color: #e74c3c;
+          color: #e74c3c;
+          margin-bottom: 10px;
+  
+          &:hover {
+            background-color: #e74c3c;
+            color: white;
+          }
+        }
+  
+        .btn-success {
+          background-color: #2ecc71;
+          color: white;
+  
+          &:hover {
+            background-color: #27ae60;
+          }
+        }
+      }
+    }
+  
+    #emptyCart {
+      text-align: center;
+      padding: 60px 0;
+      color: #7f8c8d;
+  
+      p.lead {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+      }
+  
+      .btn-primary {
+        font-size: 0.9rem;
+        padding: 15px 30px;
+        border-radius: 8px;
+        background-color: #3498db;
+        color: white;
+        text-decoration: none;
+        transition: background-color 0.2s ease-in-out;
+  
+        &:hover {
+          background-color: #2980b9;
+        }
+      }
+    }
+  }

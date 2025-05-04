@@ -1,195 +1,417 @@
-// src/app/admin/pages/order-detail/order-detail.component.scss
+// ==========================================================================
+// SCSS for Order Detail Page (Admin Area)
+// Inspired by "Minimalisme Raffiné Lumineux" Theme
+// ==========================================================================
 
-// Styles pour le lien de retour
-.back-link {
-    display: inline-block;
-    margin-bottom: 15px;
-    color: #0056b3; // Bleu un peu plus foncé
+// --- Configuration & Variables ---
+
+// Palette Sophistiquée (Cohérente avec le thème)
+$color-background-start: #1a1e2f;
+$color-background-end: #2c2f3e;
+$color-noise-opacity: 0.03;
+
+$color-card-background: #fdfdfd;
+$color-card-border: rgba(0, 0, 0, 0.08); // Légèrement plus visible pour les cartes info
+$color-card-border-focus: #aab2ff; // Bordure légèrement plus forte au focus (accessibilité)
+
+$color-text-primary: #252833;
+$color-text-secondary: #7a7d8a;
+$color-text-on-dark-bg: #f0f0f5; // Texte clair pour l'en-tête sur fond sombre
+$color-text-on-dark-bg-secondary: rgba(240, 240, 245, 0.75);
+
+$color-accent: #10c4a7;          // Accent: Turquoise/Émeraude élégant
+$color-accent-hover: lighten($color-accent, 8%);
+$color-link-on-dark: lighten($color-accent, 15%); // Lien plus clair sur fond sombre
+$color-link-on-dark-hover: lighten($color-accent, 25%);
+
+$color-code-background: #eef0f2; // Fond pour les snippets de code
+$color-code-text: #5c677b;      // Texte des snippets de code
+
+$color-error-background: #f8d7da;
+$color-error-border: #f5c6cb;
+$color-error-text: #721c24;
+
+// Badge Status Colors (Priorité à la lisibilité)
+$color-badge-pending-bg: #fff3cd;
+$color-badge-pending-text: #856404;
+$color-badge-processing-bg: #d1ecf1;
+$color-badge-processing-text: #0c5460;
+$color-badge-shipped-bg: #cce5ff;
+$color-badge-shipped-text: #004085;
+$color-badge-delivered-bg: #d4edda;
+$color-badge-delivered-text: #155724;
+$color-badge-cancelled-bg: #f8d7da;
+$color-badge-cancelled-text: #721c24;
+$color-badge-default-bg: #e9ecef;
+$color-badge-default-text: #495057;
+
+// Ombres (Identiques au thème pour la cohérence des cartes)
+$shadow-color: rgba(40, 43, 58, 0.15);
+$card-shadow:
+  0 2px 5px rgba($shadow-color, 0.05),
+  0 5px 15px rgba($shadow-color, 0.07),
+  0 10px 30px rgba($shadow-color, 0.1);
+// Pas de shadow hover ici, les cartes sont informatives
+
+// Typographie (Cohérente avec le thème)
+$font-primary: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+$admin-base-font-size: 1rem; // 16px
+
+// Dimensions & Espacements
+$admin-spacing-unit: 1.8rem;
+$card-padding: $admin-spacing-unit * 1.4; // Un peu plus de padding pour les détails
+$grid-gap: $admin-spacing-unit * 1.3;
+$card-border-radius: 10px; // Un peu moins arrondi que les cartes dashboard ? Ou garder 12px.
+$card-border-width: 1px;
+$table-padding-vertical: $admin-spacing-unit * 0.6;
+$table-padding-horizontal: $admin-spacing-unit * 0.8;
+
+// Transitions
+$transition-speed-fast: 0.2s;
+$transition-easing: ease-out;
+
+// --- Base & Layout Structure ---
+
+// Styles généraux pour cette page spécifique (s'appliquent dans le contexte du composant)
+
+.admin-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // Place le lien retour et le titre
+  padding: $admin-spacing-unit * 1.5 0;
+  margin-bottom: $admin-spacing-unit * 2;
+  border-bottom: 1px solid rgba(240, 240, 245, 0.1); // Bordure subtile sur fond sombre
+  position: relative; // Assure qu'il est au-dessus du fond global
+  z-index: 1;
+
+  .back-link {
+    color: $color-link-on-dark;
     text-decoration: none;
-    font-size: 0.9em;
-    font-weight: 500;
-    padding: 5px 0; // Espace cliquable
-  
-    &:hover {
-      color: #003d80;
-      text-decoration: underline;
+    font-size: $admin-base-font-size * 0.9;
+    display: inline-flex;
+    align-items: center;
+    transition: color $transition-speed-fast $transition-easing, transform $transition-speed-fast $transition-easing;
+
+    // La flèche est dans le texte, pas besoin d'icône ici
+    // Ajuster si une icône est utilisée
+
+    &:hover, &:focus {
+      color: $color-link-on-dark-hover;
+      transform: translateX(-3px); // Léger mouvement de retour
+      outline: none; // Gérer le focus autrement si nécessaire
     }
   }
-  
-  // Grille principale pour organiser les cartes de détails
-  .order-detail-grid {
-    display: grid;
-    // Crée 1 ou 2 colonnes selon l'espace disponible, largeur min 300px
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px; // Espace entre les cartes
-    margin-top: 20px;
+
+  h2 {
+    font-size: $admin-base-font-size * 1.8; // ~29px
+    font-weight: 600;
+    color: $color-text-on-dark-bg;
+    margin: 0; // Reset margin
+    letter-spacing: -0.4px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-align: right; // Align a droite car le lien est a gauche
   }
-  
-  // Style de base pour chaque carte de détail
-  .detail-card {
-    background-color: #ffffff;
-    border: 1px solid #dee2e6; // Bordure subtile
-    border-radius: 6px; // Coins légèrement arrondis
-    padding: 20px 25px; // Plus d'espace interne
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); // Ombre légère
-  
-    h3 {
-      margin-top: 0;
-      margin-bottom: 20px; // Plus d'espace sous le titre
-      font-size: 1.2em; // Taille de titre un peu plus grande
-      font-weight: 600;
-      color: #343a40; // Couleur de titre foncée
-      border-bottom: 1px solid #e9ecef; // Ligne de séparation
-      padding-bottom: 12px;
-    }
-  
-    p {
-      margin-top: 0;
-      margin-bottom: 12px; // Espace entre les paragraphes
-      font-size: 0.95em;
-      line-height: 1.6; // Interligne confortable
-      color: #495057; // Couleur de texte standard
-  
-      &:last-child {
-        margin-bottom: 0; // Pas de marge pour le dernier paragraphe
-      }
-  
-      strong {
-        color: #212529; // Texte en gras plus foncé
-        margin-right: 8px;
-        font-weight: 600;
-      }
-  
-      a {
-        color: #0069d9;
-        text-decoration: none;
-        &:hover {
-          text-decoration: underline;
-          color: #0056b3;
-        }
-      }
-  
-      // Style pour les ID ou codes techniques
-      .code-inline {
-        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 0.9em;
-        background-color: #f8f9fa;
-        padding: 2px 5px;
-        border-radius: 3px;
-        color: #495057;
-      }
-    }
-  
-    // Permettre à la carte des items de prendre toute la largeur
-    &.items-card {
-      grid-column: 1 / -1; // S'étend sur toutes les colonnes de la grille
-    }
-  }
-  
-  // Styles pour le tableau des articles
-  .table-responsive {
-     overflow-x: auto; // Ajoute un scroll horizontal si nécessaire sur petits écrans
-  }
-  
-  .items-table {
+}
+
+.admin-page-content {
+  padding: 0 $admin-spacing-unit; // Ajoute un padding latéral global
+  position: relative;
+  z-index: 1;
+
+  // Style pour le message d'erreur global
+  .alert-danger {
+    background-color: $color-error-background;
+    border: 1px solid $color-error-border;
+    color: $color-error-text;
+    padding: $admin-spacing-unit * 0.8 $admin-spacing-unit * 1.2;
+    margin-bottom: $admin-spacing-unit * 1.5;
+    border-radius: $card-border-radius * 0.5; // Arrondi plus petit pour les alertes
     width: 100%;
-    border-collapse: collapse; // Fusionne les bordures
-    margin-top: 15px;
-    margin-bottom: 10px; // Espace après le tableau
-  
-    th, td {
-      padding: 12px 15px; // Espace dans les cellules
-      text-align: left;
-      border-bottom: 1px solid #e9ecef; // Lignes horizontales
-      font-size: 0.9em;
-      vertical-align: middle; // Alignement vertical
-    }
-  
-    thead th {
-      background-color: #f8f9fa; // Fond léger pour l'en-tête
-      font-weight: 600;
-      color: #495057;
-      white-space: nowrap; // Empêche le retour à la ligne
-      border-bottom-width: 2px; // Ligne plus épaisse sous l'en-tête
-      border-top: 1px solid #e9ecef; // Ligne au-dessus (optionnel)
-    }
-  
-    tbody tr:hover {
-       background-color: #f1f3f5; // Léger surlignage au survol
-    }
-  
-    tbody tr:last-child td {
-       border-bottom: none; // Pas de ligne sous la dernière ligne du corps
-    }
-  
-    // Alignement à droite pour les chiffres
-    .text-right {
-      text-align: right;
-      white-space: nowrap; // Empêche le retour à la ligne des montants
-    }
-  
-    // Styles pour le pied de tableau (total)
-    tfoot td {
-      border-top: 2px solid #dee2e6; // Ligne épaisse au-dessus du total
-      font-weight: 600;
-      color: #212529;
-      background-color: #f8f9fa; // Fond léger pour le total
-    }
-    .total-label {
-      padding-right: 10px;
-    }
-    .total-amount {
-       font-size: 1.1em; // Mettre le total en évidence
-    }
   }
-  
-  // Styles pour les badges de statut
-  .status-badge {
-    display: inline-block;
-    padding: 4px 10px; // Taille du badge
-    font-size: 0.8em; // Taille de police dans le badge
-    font-weight: 700; // Texte en gras
-    line-height: 1;
+
+  // Style pour le message de chargement
+  [role="status"] { // Cibler le conteneur du message de chargement si possible
+    color: $color-text-on-dark-bg-secondary; // Texte clair sur fond sombre
+    font-style: italic;
+    padding: $admin-spacing-unit 0;
     text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: 0.3rem; // Coins arrondis
-    color: #fff; // Couleur de texte par défaut (blanc)
-    text-transform: capitalize; // Première lettre en majuscule
-  
-    // Utiliser les classes générées dynamiquement (ex: status-en-attente)
-    &.status-en-attente,
-    &.status-en-préparation {
-      background-color: #ffc107; // Jaune/Orange
-      color: #333; // Texte foncé pour contraste
+    width: 100%;
+  }
+}
+
+// --- Grid Layout for Details ---
+
+.order-detail-grid {
+  display: grid;
+  // Crée 2 colonnes principales par défaut, min 350px
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: $grid-gap;
+}
+
+// --- Card Styling ---
+
+.detail-card {
+  background-color: $color-card-background;
+  border-radius: $card-border-radius;
+  padding: $card-padding;
+  border: $card-border-width solid $color-card-border;
+  box-shadow: $card-shadow;
+  margin-bottom: $grid-gap; // Ajoute un espace en bas si la grille passe en une colonne
+  display: flex;          // Utilisation de flex pour la structure interne
+  flex-direction: column; // Les éléments s'empilent verticalement
+  overflow: hidden;      // Pour s'assurer que rien ne dépasse
+
+  // Pas d'effet de survol transform/shadow ici, ce sont des cartes informatives
+
+  // Titre de la carte
+  h3 {
+    font-size: $admin-base-font-size * 1.25; // ~20px
+    font-weight: 500;
+    color: $color-text-primary;
+    margin-top: 0; // Reset margin top
+    margin-bottom: $admin-spacing-unit * 1.2;
+    padding-bottom: $admin-spacing-unit * 0.7;
+    border-bottom: 1px solid #ebebef; // Séparateur interne clair
+    letter-spacing: 0.1px;
+  }
+
+  // Paragraphes d'information dans les cartes
+  p {
+    font-size: $admin-base-font-size * 0.95; // ~15px
+    color: $color-text-secondary;
+    margin-top: 0;
+    margin-bottom: $admin-spacing-unit * 0.7; // Espace entre les lignes d'info
+    line-height: 1.6;
+
+    &:last-child {
+      margin-bottom: 0; // Pas de marge pour le dernier élément
     }
-    &.status-expédiée {
-      background-color: #17a2b8; // Bleu/Cyan
-    }
-    &.status-livrée {
-      background-color: #28a745; // Vert
-    }
-    &.status-annulée {
-      background-color: #6c757d; // Gris
+
+    // Emphase sur les labels
+    strong {
+      color: $color-text-primary;
+      font-weight: 500;
+      margin-right: 8px; // Espace entre label et valeur
     }
   }
-  
-  // Styles pour les messages d'alerte (erreur ou chargement)
-  .alert {
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    border: 1px solid transparent;
+
+  // Style pour les liens dans les cartes
+  a {
+    color: $color-accent;
+    text-decoration: none;
+    transition: color $transition-speed-fast $transition-easing;
+
+    &:hover, &:focus {
+      color: $color-accent-hover;
+      text-decoration: underline;
+      outline: none; // Style de focus personnalisé si nécessaire
+    }
+  }
+
+  // Style spécifique pour le code inline
+  code.code-inline {
+    font-family: $font-code;
+    background-color: $color-code-background;
+    color: $color-code-text;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.95em;
-  
-    &.alert-danger {
-      color: #721c24;
-      background-color: #f8d7da;
-      border-color: #f5c6cb;
-    }
-    // Ajouter .alert-info si besoin pour le message de chargement
+    font-size: $admin-base-font-size * 0.85; // Légèrement plus petit
   }
-  
-  // Pipe personnalisé pour remplacer les espaces (juste pour info, pas de style direct)
-  // La classe CSS est générée dans le HTML via: status-{{ order.status | lowercase | replace:' ':'-' }}
-  // Exemple: 'En préparation' devient 'status-en-préparation'
+
+  // Style spécifique pour les templates "Pas d'adresse", "Pas d'items"
+  ng-template p, // Cibler les <p> dans les ng-template
+  p.no-data-message { // Ou ajouter une classe si nécessaire
+    font-style: italic;
+    color: $color-text-secondary;
+  }
+}
+
+// --- Specific Card Content Styling ---
+
+// Badge de Statut
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: $admin-base-font-size * 0.8; // Petit badge
+  font-weight: 600; // Gras pour lisibilité
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 10px; // Badge arrondi
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  // Default/Fallback style
+  background-color: $color-badge-default-bg;
+  color: $color-badge-default-text;
+
+  // Specific Statuses (les classes sont ajoutées via [class] dans le TS)
+  &.status-pending {
+    background-color: $color-badge-pending-bg;
+    color: $color-badge-pending-text;
+  }
+  &.status-processing {
+    background-color: $color-badge-processing-bg;
+    color: $color-badge-processing-text;
+  }
+  &.status-shipped {
+    background-color: $color-badge-shipped-bg;
+    color: $color-badge-shipped-text;
+  }
+  &.status-delivered {
+    background-color: $color-badge-delivered-bg;
+    color: $color-badge-delivered-text;
+  }
+  &.status-cancelled {
+    background-color: $color-badge-cancelled-bg;
+    color: $color-badge-cancelled-text;
+  }
+  // Ajoutez d'autres statuts si nécessaire
+}
+
+// Styles pour la carte des articles (qui contient le tableau)
+.detail-card.items-card {
+  // Peut nécessiter de s'étendre sur plus de colonnes sur grand écran
+  @media (min-width: 1200px) { // Ajuster le breakpoint si nécessaire
+    grid-column: span 2; // Prend toute la largeur sur les grands écrans
+  }
+}
+
+// --- Table Styling (Items Table) ---
+
+.table-responsive {
+  overflow-x: auto; // Permet le scroll horizontal sur petits écrans
+  width: 100%;
+  margin-top: $admin-spacing-unit * 0.5; // Espace avant le tableau
+  -webkit-overflow-scrolling: touch; // Scroll fluide sur iOS
+}
+
+.items-table {
+  width: 100%;
+  min-width: 600px; // Largeur minimale avant que le scroll n'apparaisse
+  border-collapse: collapse;
+  font-size: $admin-base-font-size * 0.9; // Texte du tableau légèrement plus petit
+
+  // Cellules Header et Data
+  th, td {
+    padding: $table-padding-vertical $table-padding-horizontal;
+    text-align: left;
+    vertical-align: middle; // Alignement vertical centré
+    border-bottom: 1px solid #ebebef; // Ligne séparatrice horizontale
+  }
+
+  // Header du tableau
+  thead th {
+    background-color: #f8f9fa; // Fond très clair pour l'en-tête
+    color: $color-text-secondary;
+    font-weight: 500; // Poids moyen pour les labels
+    text-transform: uppercase;
+    font-size: $admin-base-font-size * 0.8; // Plus petit
+    letter-spacing: 0.5px;
+    border-bottom-width: 2px; // Ligne plus épaisse sous l'en-tête
+    border-color: #dee2e6;
+  }
+
+  // Corps du tableau
+  tbody tr {
+    transition: background-color $transition-speed-fast $transition-easing;
+
+    &:hover {
+      background-color: rgba($color-accent, 0.04); // Très léger fond au survol
+    }
+
+    // Style pour l'ID du livre (plus petit)
+    td small {
+      font-size: 85%; // Rend l'ID plus petit
+      color: $color-text-secondary;
+      margin-left: 4px;
+    }
+  }
+
+  // Pied du tableau (Total)
+  tfoot tr {
+    background-color: #f8f9fa; // Fond similaire à l'en-tête
+    border-top: 2px solid #dee2e6; // Ligne épaisse au-dessus du total
+  }
+
+  tfoot td {
+    border-bottom: none; // Pas de bordure sous la dernière ligne
+  }
+
+  .total-label {
+    font-weight: 600;
+    color: $color-text-primary;
+  }
+
+  .total-amount {
+    font-weight: 700; // Total en très gras
+    color: $color-accent; // Utilise la couleur d'accent pour le total
+    font-size: $admin-base-font-size * 1.1; // Légèrement plus grand
+  }
+
+  // Helper pour alignement à droite
+  .text-right {
+    text-align: right;
+  }
+}
+
+// --- Media Queries for Responsiveness ---
+
+@media (max-width: 992px) {
+  // Sur tablette, la grille peut rester en 2 colonnes ou passer en 1 si nécessaire
+  // .order-detail-grid {
+  //   grid-template-columns: 1fr; // Forcer une colonne si 350px min est trop large
+  // }
+}
+
+@media (max-width: 768px) {
+  // Sur mobile
+  .order-detail-grid {
+    grid-template-columns: 1fr; // Forcer une seule colonne
+    gap: $grid-gap * 0.8; // Réduire l'espace entre les cartes
+  }
+
+  .admin-page-header {
+    flex-direction: column; // Empiler le lien retour et le titre
+    align-items: flex-start; // Aligner à gauche
+
+    h2 {
+      text-align: left; // Aligner le titre à gauche
+      margin-top: $admin-spacing-unit * 0.5; // Espace après le lien retour
+      font-size: $admin-base-font-size * 1.6; // Titre un peu plus petit
+    }
+  }
+
+  .detail-card {
+    padding: $card-padding * 0.8; // Réduire le padding des cartes
+    border-radius: $card-border-radius * 0.8;
+    margin-bottom: $grid-gap * 0.8;
+  }
+
+  .items-table {
+    font-size: $admin-base-font-size * 0.85; // Texte du tableau encore plus petit
+  }
+
+  .items-table th, .items-table td {
+    padding: ($table-padding-vertical * 0.8) ($table-padding-horizontal * 0.8);
+  }
+}
+
+// Option pour réduire le mouvement si l'utilisateur préfère
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-header .back-link,
+  .detail-card a,
+  .items-table tbody tr {
+    transition: none;
+  }
+  .admin-page-header .back-link:hover,
+  .admin-page-header .back-link:focus {
+    transform: none;
+  }
+}
+
+// ==========================================================================
+// Fin du SCSS pour Order Detail Page
+// ==========================================================================
